@@ -38,11 +38,12 @@ jobs:
 ```
 
 ## Inputs
-* `token`: your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
-* `exclude`: a comma separated list of commits types you want to exclude from the changelog. Optional.
+* `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
+* `exclude`: A comma separated list of commits types you want to exclude from the changelog. Optional.
 
 ## Outputs
-* `changelog`: the generated string for the changelog of this release.
+* `changelog`: Generated changelog for the latest tag.
+* `changes`: Generated changelog for the latest tag, without the version/date header.
 
 ## Roadmap
 This Actions is very simple, and not very configurable yet. 
@@ -50,3 +51,5 @@ This Actions is very simple, and not very configurable yet.
 - It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
 - The mapping from raw type (like `feat`) to changelog header (like `New Features`) would also be good to have configurable. 
 - Mentioning the author of a PR within the changelog would be good.
+- Configure the ordering of the types.
+- Display breaking changes notes.

@@ -10,6 +10,8 @@ inputs:
 outputs:
   changelog:
     description: Generated changelog for the latest tag
+  changelog:
+    description: Generated changelog for the latest tag, without the version/date header
 runs:
   using: node12
   main: "dist/index.js"
