@@ -56,5 +56,5 @@ jobs:
         if: ${{ !env.ACT }}
         with:
           add: CHANGELOG.md
-          message: "doc: Update CHANGELOG.md"
+          message: "chore: Update CHANGELOG.md"
           branch: main
