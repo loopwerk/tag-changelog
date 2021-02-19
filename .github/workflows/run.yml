@@ -57,3 +57,4 @@ jobs:
         with:
           add: CHANGELOG.md
           message: "doc: Update CHANGELOG.md"
+          branch: main
