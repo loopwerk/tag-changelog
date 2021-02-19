@@ -1,3 +1,16 @@
+# 0.0.9 - 2021-02-19
+
+## Documentation Changes
+- Update CHANGELOG.md
+- Update CHANGELOG.md
+
+## Other Changes
+- Test a second one, see if it's properly prepended
+
+## New Features
+- Append a blank line after the changelog output, so it can be prepending before existing content
+
+
 # 0.0.8 - 2021-02-19
 
 ## Documentation Changes
