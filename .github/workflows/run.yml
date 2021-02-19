@@ -20,6 +20,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Create changelog
+        id: changelog
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
