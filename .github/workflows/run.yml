@@ -44,7 +44,7 @@ jobs:
           path: ./CHANGELOG.md
 
       - name: Write to CHANGELOG.md
-        uses: DamianReeves/write-file-action
+        uses: DamianReeves/write-file-action@latest
         if: ${{ !env.ACT }}
         with:
           path: ./CHANGELOG.md
