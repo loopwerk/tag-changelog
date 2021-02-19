@@ -46,6 +46,7 @@ const TYPES = {
   perf: "Performance Improvements",
   style: "Code Style Changes",
   refactor: "Refactors",
+  doc: "Documentation Changes",
 }
 
 function translateType(type) {

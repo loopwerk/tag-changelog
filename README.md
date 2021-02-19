@@ -53,3 +53,6 @@ This action is very simple, and not very configurable yet.
 - Mentioning the author of a PR within the changelog would be good.
 - Configure the ordering of the types.
 - Display breaking changes notes.
+
+## Thanks
+Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.
