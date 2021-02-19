@@ -40,8 +40,10 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(104);
+/******/ 		return __webpack_require__(676);
 /******/ 	};
+/******/ 	// initialize runtime
+/******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
@@ -153,6 +155,69 @@ function onceStrict (fn) {
 
 /***/ }),
 
+/***/ 82:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
+
+/***/ 83:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = visit
+
+var visitParents = __webpack_require__(727)
+
+var CONTINUE = visitParents.CONTINUE
+var SKIP = visitParents.SKIP
+var EXIT = visitParents.EXIT
+
+visit.CONTINUE = CONTINUE
+visit.SKIP = SKIP
+visit.EXIT = EXIT
+
+function visit(tree, test, visitor, reverse) {
+  if (typeof test === 'function' && typeof visitor !== 'function') {
+    reverse = visitor
+    visitor = test
+    test = null
+  }
+
+  visitParents(tree, test, overload, reverse)
+
+  function overload(node, parents) {
+    var parent = parents[parents.length - 1]
+    var index = parent ? parent.children.indexOf(node) : null
+    return visitor(node, index, parent)
+  }
+}
+
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
@@ -160,31 +225,39 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 104:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ 102:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-const github = __webpack_require__(469);
-const context = github.context;
-console.log(process.env);
-console.log(context.repo);
+"use strict";
 
-// async function run() {
-//   const token = core.getInput('token');
-//   const octokit = github.getOctokit(token);
-
-//   const { data: pullRequest } = await octokit.pulls.get({
-//     owner: 'octokit',
-//     repo: 'rest.js',
-//     pull_number: 123,
-//     mediaType: {
-//       format: 'diff'
-//     }
-//   });
-
-//   console.log(pullRequest);
-// }
-
-// run();
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
 
 /***/ }),
 
@@ -506,6 +579,52 @@ if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
   debug = function() {};
 }
 exports.debug = debug; // for test
+
+
+/***/ }),
+
+/***/ 157:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { CR, LF, ZWNBSP, TAB, VT, FF, SP, NBSP } = __webpack_require__(801)
+
+module.exports = {
+  /*
+  * <whitespace>   ::= <ZWNBSP> | <TAB> | <VT> | <FF> | <SP> | <NBSP> | <USP>
+  */
+  isWhitespace (token) {
+    return token === ZWNBSP || token === TAB || token === VT || token === FF || token === SP || token === NBSP
+  },
+
+  /*
+  * <newline>      ::= <CR>? <LF>
+  */
+  isNewline (token) {
+    const chr = token.charAt(0)
+    if (chr === CR || chr === LF) return true
+  },
+
+  /*
+  * <parens>       ::= "(" | ")"
+  */
+  isParens (token) {
+    return token === '(' || token === ')'
+  }
+}
+
+
+/***/ }),
+
+/***/ 205:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const parser = __webpack_require__(430)
+const { toConventionalChangelogFormat } = __webpack_require__(710)
+
+module.exports = {
+  parser,
+  toConventionalChangelogFormat
+}
 
 
 /***/ }),
@@ -1204,6 +1323,530 @@ exports.endpoint = endpoint;
 
 module.exports = __webpack_require__(141);
 
+
+/***/ }),
+
+/***/ 430:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const Scanner = __webpack_require__(514)
+const { isWhitespace, isNewline, isParens } = __webpack_require__(157)
+
+/*
+ * <message>       ::= <summary>, <newline>+, <body>, (<newline>+, <footer>)*
+ *                  |  <summary>, (<newline>+, <footer>)*
+ *                  |  <summary>, <newline>*
+ *
+ */
+function message (commitText) {
+  const scanner = new Scanner(commitText.trim())
+  const node = scanner.enter('message', [])
+
+  // <summary> ...
+  const s = summary(scanner)
+  if (s instanceof Error) {
+    throw s
+  } else {
+    node.children.push(s)
+  }
+  if (scanner.eof()) {
+    return scanner.exit(node)
+  }
+
+  let nl
+  let b
+  // ... <newline>* <body> ...
+  nl = newline(scanner)
+  if (nl instanceof Error) {
+    throw nl
+  } else {
+    node.children.push(nl)
+    b = body(scanner)
+    if (b instanceof Error) {
+      b = null
+    } else {
+      node.children.push(b)
+    }
+  }
+  if (scanner.eof()) {
+    return scanner.exit(node)
+  }
+
+  //  ... <newline>* <footer>+
+  if (b) {
+    nl = newline(scanner)
+    if (nl instanceof Error) {
+      throw nl
+    } else {
+      node.children.push(nl)
+    }
+  }
+  while (!scanner.eof()) {
+    const f = footer(scanner)
+    if (f instanceof Error) {
+      break
+    } else {
+      node.children.push(f)
+    }
+    nl = newline(scanner)
+    if (nl instanceof Error) {
+      break
+    } else {
+      node.children.push(nl)
+    }
+  }
+
+  return scanner.exit(node)
+}
+
+/*
+ * <summary>      ::= <type> "(" <scope> ")" ["!"] ":" <whitespace>* <text>
+ *                 |  <type> ["!"] ":" <whitespace>* <text>
+ *
+ */
+function summary (scanner) {
+  const node = scanner.enter('summary', [])
+
+  // <type> ...
+  const t = type(scanner)
+  if (t instanceof Error) {
+    return t
+  } else {
+    node.children.push(t)
+  }
+
+  // ... "(" <scope> ")" ...
+  let s = scope(scanner)
+  if (s instanceof Error) {
+    s = null
+  } else {
+    node.children.push(s)
+  }
+
+  // ... ["!"] ...
+  let b = breakingChange(scanner)
+  if (b instanceof Error) {
+    b = null
+  } else {
+    node.children.push(b)
+  }
+
+  // ... ":" ...
+  const sep = separator(scanner)
+  if (sep instanceof Error) {
+    return scanner.abort(node, [!s && '(', !b && '!', ':'])
+  } else {
+    node.children.push(sep)
+  }
+
+  // ... <whitespace>* ...
+  const ws = whitespace(scanner)
+  if (!(ws instanceof Error)) {
+    node.children.push(ws)
+  }
+
+  // ... <text>
+  node.children.push(text(scanner))
+  return scanner.exit(node)
+}
+
+/*
+ * <type>         ::= 1*<any UTF8-octets except newline or parens or ["!"] ":" or whitespace>
+ */
+function type (scanner) {
+  const node = scanner.enter('type', '')
+  while (!scanner.eof()) {
+    const token = scanner.peek()
+    if (isParens(token) || isWhitespace(token) || isNewline(token) || token === '!' || token === ':') {
+      break
+    }
+    node.value += scanner.next()
+  }
+  if (node.value === '') {
+    return scanner.abort(node)
+  } else {
+    return scanner.exit(node)
+  }
+}
+
+/*
+ * <text>         ::= 1*<any UTF8-octets except newline>
+ */
+function text (scanner) {
+  const node = scanner.enter('text', '')
+  while (!scanner.eof()) {
+    const token = scanner.peek()
+    if (isNewline(token)) {
+      break
+    }
+    node.value += scanner.next()
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * "(" <scope> ")"        ::= 1*<any UTF8-octets except newline or parens>
+ */
+function scope (scanner) {
+  if (scanner.peek() !== '(') {
+    return scanner.abort(scanner.enter('scope', ''))
+  } else {
+    scanner.next()
+  }
+
+  const node = scanner.enter('scope', '')
+
+  while (!scanner.eof()) {
+    const token = scanner.peek()
+    if (isParens(token) || isNewline(token)) {
+      break
+    }
+    node.value += scanner.next()
+  }
+
+  if (scanner.peek() !== ')') {
+    throw scanner.abort(node, [')'])
+  } else {
+    scanner.exit(node)
+    scanner.next()
+  }
+
+  if (node.value === '') {
+    return scanner.abort(node)
+  } else {
+    return node
+  }
+}
+
+/*
+ * <body>          ::= [<any body-text except pre-footer>], <newline>, <body>*
+ *                  | [<any body-text except pre-footer>]
+ */
+function body (scanner) {
+  const node = scanner.enter('body', [])
+
+  // check except <pre-footer> condition:
+  const pf = preFooter(scanner)
+  if (!(pf instanceof Error)) return scanner.abort(node)
+
+  // ["BREAKING CHANGE", ":", <whitespace>*]
+  const b = breakingChange(scanner, false)
+  if (!(b instanceof Error) && scanner.peek() === ':') {
+    node.children.push(b)
+    node.children.push(separator(scanner))
+    const w = whitespace(scanner)
+    if (!(w instanceof Error)) node.children.push(w)
+  }
+
+  // [<text>]
+  const t = text(scanner)
+  node.children.push(t)
+  // <newline>, <body>*
+  const nl = newline(scanner)
+  if (!(nl instanceof Error)) {
+    const b = body(scanner)
+    if (b instanceof Error) {
+      scanner.abort(nl)
+    } else {
+      node.children.push(nl)
+      Array.prototype.push.apply(node.children, b.children)
+    }
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * <newline>*, <footer>+
+ */
+function preFooter (scanner) {
+  const node = scanner.enter('pre-footer', [])
+  let f
+  while (!scanner.eof()) {
+    newline(scanner)
+    f = footer(scanner)
+    if (f instanceof Error) return scanner.abort(node)
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * <footer>       ::= <token> <separator> <whitespace>* <value>
+ */
+function footer (scanner) {
+  const node = scanner.enter('footer', [])
+  // <token>
+  const t = token(scanner)
+  if (t instanceof Error) {
+    return t
+  } else {
+    node.children.push(t)
+  }
+
+  // <separator>
+  const s = separator(scanner)
+  if (s instanceof Error) {
+    scanner.abort(node)
+    return s
+  } else {
+    node.children.push(s)
+  }
+
+  // <whitespace>*
+  const ws = whitespace(scanner)
+  if (!(ws instanceof Error)) {
+    node.children.push(ws)
+  }
+
+  // <value>
+  const v = value(scanner)
+  if (v instanceof Error) {
+    scanner.abort(node)
+    return v
+  } else {
+    node.children.push(v)
+  }
+
+  return scanner.exit(node)
+}
+
+/*
+ * <token>        ::= <breaking-change>
+ *                 |  <type>, "(" <scope> ")", ["!"]
+ *                 |  <type>
+ */
+function token (scanner) {
+  const node = scanner.enter('token', [])
+  // "BREAKING CHANGE"
+  const b = breakingChange(scanner)
+  if (b instanceof Error) {
+    scanner.abort(node)
+  } else {
+    node.children.push(b)
+    return scanner.exit(node)
+  }
+
+  // <type>
+  const t = type(scanner)
+  if (t instanceof Error) {
+    return t
+  } else {
+    node.children.push(t)
+    // "(" <scope> ")"
+    const s = scope(scanner)
+    if (!(s instanceof Error)) {
+      node.children.push(s)
+    }
+    // ["!"]
+    const b = breakingChange(scanner)
+    if (!(b instanceof Error)) {
+      node.children.push(b)
+    }
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * <breaking-change> ::= "!" | "BREAKING CHANGE" | "BREAKING-CHANGE"
+ *
+ * Note: "!" is only allowed in <footer> and <summary>, not <body>.
+ */
+function breakingChange (scanner, allowBang = true) {
+  const node = scanner.enter('breaking-change', '')
+  if (scanner.peek() === '!' && allowBang) {
+    node.value = scanner.next()
+  } else if (scanner.peekLiteral('BREAKING CHANGE') || scanner.peekLiteral('BREAKING-CHANGE')) {
+    node.value = scanner.next('BREAKING CHANGE'.length)
+  }
+  if (node.value === '') {
+    return scanner.abort(node, ['BREAKING CHANGE'])
+  } else {
+    return scanner.exit(node)
+  }
+}
+
+/*
+ * <value>        ::= <text> <continuation>*
+ *                 |  <text>
+ */
+function value (scanner) {
+  const node = scanner.enter('value', [])
+  node.children.push(text(scanner))
+  let c
+  // <continuation>*
+  while (!((c = continuation(scanner)) instanceof Error)) {
+    node.children.push(c)
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * <newline> <whitespace> <text>
+ */
+function continuation (scanner) {
+  const node = scanner.enter('continuation', [])
+  // <newline>
+  const nl = newline(scanner)
+  if (nl instanceof Error) {
+    return nl
+  } else {
+    node.children.push(nl)
+  }
+
+  // <whitespace> <text>
+  const ws = whitespace(scanner)
+  if (ws instanceof Error) {
+    scanner.abort(node)
+    return ws
+  } else {
+    node.children.push(ws)
+    node.children.push(text(scanner))
+  }
+
+  return scanner.exit(node)
+}
+
+/*
+ * <separator>    ::= ":" | " #"
+ */
+function separator (scanner) {
+  const node = scanner.enter('separator', '')
+  // ':'
+  if (scanner.peek() === ':') {
+    node.value = scanner.next()
+    return scanner.exit(node)
+  }
+
+  // ' #'
+  if (scanner.peek() === ' ') {
+    scanner.next()
+    if (scanner.peek() === '#') {
+      scanner.next()
+      node.value = ' #'
+      return scanner.exit(node)
+    } else {
+      return scanner.abort(node)
+    }
+  }
+
+  return scanner.abort(node)
+}
+
+/*
+ * <whitespace>+   ::= <ZWNBSP> | <TAB> | <VT> | <FF> | <SP> | <NBSP> | <USP>
+ */
+function whitespace (scanner) {
+  const node = scanner.enter('whitespace', '')
+  while (isWhitespace(scanner.peek())) {
+    node.value += scanner.next()
+  }
+  if (node.value === '') {
+    return scanner.abort(node, [' '])
+  }
+  return scanner.exit(node)
+}
+
+/*
+ * <newline>+       ::= [<CR>], <LF>
+ */
+function newline (scanner) {
+  const node = scanner.enter('newline', '')
+  while (isNewline(scanner.peek())) {
+    node.value += scanner.next()
+  }
+  if (node.value === '') {
+    return scanner.abort(node, ['<CR><LF>', '<LF>'])
+  }
+  return scanner.exit(node)
+}
+
+module.exports = message
+
+
+/***/ }),
+
+/***/ 431:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
+/**
+ * Commands
+ *
+ * Command Format:
+ *   ::name key=value,key=value::message
+ *
+ * Examples:
+ *   ::warning::This is the message
+ *   ::set-env name=MY_VAR::some value
+ */
+function issueCommand(command, properties, message) {
+    const cmd = new Command(command, properties, message);
+    process.stdout.write(cmd.toString() + os.EOL);
+}
+exports.issueCommand = issueCommand;
+function issue(name, message = '') {
+    issueCommand(name, {}, message);
+}
+exports.issue = issue;
+const CMD_STRING = '::';
+class Command {
+    constructor(command, properties, message) {
+        if (!command) {
+            command = 'missing.command';
+        }
+        this.command = command;
+        this.properties = properties;
+        this.message = message;
+    }
+    toString() {
+        let cmdStr = CMD_STRING + this.command;
+        if (this.properties && Object.keys(this.properties).length > 0) {
+            cmdStr += ' ';
+            let first = true;
+            for (const key in this.properties) {
+                if (this.properties.hasOwnProperty(key)) {
+                    const val = this.properties[key];
+                    if (val) {
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            cmdStr += ',';
+                        }
+                        cmdStr += `${key}=${escapeProperty(val)}`;
+                    }
+                }
+            }
+        }
+        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
+        return cmdStr;
+    }
+}
+function escapeData(s) {
+    return utils_1.toCommandValue(s)
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
+}
+function escapeProperty(s) {
+    return utils_1.toCommandValue(s)
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A')
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
+}
+//# sourceMappingURL=command.js.map
 
 /***/ }),
 
@@ -3152,6 +3795,336 @@ exports.getOctokit = getOctokit;
 
 /***/ }),
 
+/***/ 470:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const command_1 = __webpack_require__(431);
+const file_command_1 = __webpack_require__(102);
+const utils_1 = __webpack_require__(82);
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
+/**
+ * The code to exit an action
+ */
+var ExitCode;
+(function (ExitCode) {
+    /**
+     * A code indicating that the action was successful
+     */
+    ExitCode[ExitCode["Success"] = 0] = "Success";
+    /**
+     * A code indicating that the action was a failure
+     */
+    ExitCode[ExitCode["Failure"] = 1] = "Failure";
+})(ExitCode = exports.ExitCode || (exports.ExitCode = {}));
+//-----------------------------------------------------------------------
+// Variables
+//-----------------------------------------------------------------------
+/**
+ * Sets env variable for this action and future actions in the job
+ * @param name the name of the variable to set
+ * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function exportVariable(name, val) {
+    const convertedVal = utils_1.toCommandValue(val);
+    process.env[name] = convertedVal;
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
+}
+exports.exportVariable = exportVariable;
+/**
+ * Registers a secret which will get masked from logs
+ * @param secret value of the secret
+ */
+function setSecret(secret) {
+    command_1.issueCommand('add-mask', {}, secret);
+}
+exports.setSecret = setSecret;
+/**
+ * Prepends inputPath to the PATH (for this action and future actions)
+ * @param inputPath
+ */
+function addPath(inputPath) {
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
+    process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
+}
+exports.addPath = addPath;
+/**
+ * Gets the value of an input.  The value is also trimmed.
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   string
+ */
+function getInput(name, options) {
+    const val = process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] || '';
+    if (options && options.required && !val) {
+        throw new Error(`Input required and not supplied: ${name}`);
+    }
+    return val.trim();
+}
+exports.getInput = getInput;
+/**
+ * Sets the value of an output.
+ *
+ * @param     name     name of the output to set
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setOutput(name, value) {
+    command_1.issueCommand('set-output', { name }, value);
+}
+exports.setOutput = setOutput;
+/**
+ * Enables or disables the echoing of commands into stdout for the rest of the step.
+ * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
+ *
+ */
+function setCommandEcho(enabled) {
+    command_1.issue('echo', enabled ? 'on' : 'off');
+}
+exports.setCommandEcho = setCommandEcho;
+//-----------------------------------------------------------------------
+// Results
+//-----------------------------------------------------------------------
+/**
+ * Sets the action status to failed.
+ * When the action exits it will be with an exit code of 1
+ * @param message add error issue message
+ */
+function setFailed(message) {
+    process.exitCode = ExitCode.Failure;
+    error(message);
+}
+exports.setFailed = setFailed;
+//-----------------------------------------------------------------------
+// Logging Commands
+//-----------------------------------------------------------------------
+/**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
+/**
+ * Writes debug message to user log
+ * @param message debug message
+ */
+function debug(message) {
+    command_1.issueCommand('debug', {}, message);
+}
+exports.debug = debug;
+/**
+ * Adds an error issue
+ * @param message error issue message. Errors will be converted to string via toString()
+ */
+function error(message) {
+    command_1.issue('error', message instanceof Error ? message.toString() : message);
+}
+exports.error = error;
+/**
+ * Adds an warning issue
+ * @param message warning issue message. Errors will be converted to string via toString()
+ */
+function warning(message) {
+    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+}
+exports.warning = warning;
+/**
+ * Writes info to log with console.log.
+ * @param message info message
+ */
+function info(message) {
+    process.stdout.write(message + os.EOL);
+}
+exports.info = info;
+/**
+ * Begin an output group.
+ *
+ * Output until the next `groupEnd` will be foldable in this group
+ *
+ * @param name The name of the output group
+ */
+function startGroup(name) {
+    command_1.issue('group', name);
+}
+exports.startGroup = startGroup;
+/**
+ * End an output group.
+ */
+function endGroup() {
+    command_1.issue('endgroup');
+}
+exports.endGroup = endGroup;
+/**
+ * Wrap an asynchronous function call in a group.
+ *
+ * Returns the same type as the function itself.
+ *
+ * @param name The name of the group
+ * @param fn The function to wrap in the group
+ */
+function group(name, fn) {
+    return __awaiter(this, void 0, void 0, function* () {
+        startGroup(name);
+        let result;
+        try {
+            result = yield fn();
+        }
+        finally {
+            endGroup();
+        }
+        return result;
+    });
+}
+exports.group = group;
+//-----------------------------------------------------------------------
+// Wrapper action state
+//-----------------------------------------------------------------------
+/**
+ * Saves state for current action, the state can only be retrieved by this action's post job execution.
+ *
+ * @param     name     name of the state to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function saveState(name, value) {
+    command_1.issueCommand('save-state', { name }, value);
+}
+exports.saveState = saveState;
+/**
+ * Gets the value of an state set by this action's main execution.
+ *
+ * @param     name     name of the state to get
+ * @returns   string
+ */
+function getState(name) {
+    return process.env[`STATE_${name}`] || '';
+}
+exports.getState = getState;
+//# sourceMappingURL=core.js.map
+
+/***/ }),
+
+/***/ 487:
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = convert
+
+function convert(test) {
+  if (test == null) {
+    return ok
+  }
+
+  if (typeof test === 'string') {
+    return typeFactory(test)
+  }
+
+  if (typeof test === 'object') {
+    return 'length' in test ? anyFactory(test) : allFactory(test)
+  }
+
+  if (typeof test === 'function') {
+    return test
+  }
+
+  throw new Error('Expected function, string, or object as test')
+}
+
+// Utility assert each property in `test` is represented in `node`, and each
+// values are strictly equal.
+function allFactory(test) {
+  return all
+
+  function all(node) {
+    var key
+
+    for (key in test) {
+      if (node[key] !== test[key]) return false
+    }
+
+    return true
+  }
+}
+
+function anyFactory(tests) {
+  var checks = []
+  var index = -1
+
+  while (++index < tests.length) {
+    checks[index] = convert(tests[index])
+  }
+
+  return any
+
+  function any() {
+    var index = -1
+
+    while (++index < checks.length) {
+      if (checks[index].apply(this, arguments)) {
+        return true
+      }
+    }
+
+    return false
+  }
+}
+
+// Utility to convert a string into a function which checks a given node’s type
+// for said string.
+function typeFactory(test) {
+  return type
+
+  function type(node) {
+    return Boolean(node && node.type === test)
+  }
+}
+
+// Utility to return true.
+function ok() {
+  return true
+}
+
+
+/***/ }),
+
 /***/ 510:
 /***/ (function(module) {
 
@@ -3201,6 +4174,92 @@ function addHook(state, kind, name, hook) {
     orig: orig,
   });
 }
+
+
+/***/ }),
+
+/***/ 514:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { isNewline } = __webpack_require__(157)
+const { CR, LF } = __webpack_require__(801)
+
+class Scanner {
+  constructor (text, pos) {
+    this.text = text
+    this.pos = pos ? { ...pos } : { line: 1, column: 1, offset: 0 }
+  }
+
+  eof () {
+    return this.pos.offset >= this.text.length
+  }
+
+  next (n) {
+    const token = n
+      ? this.text.substring(this.pos.offset, this.pos.offset + n)
+      : this.peek()
+
+    this.pos.offset += token.length
+    this.pos.column += token.length
+
+    if (isNewline(token)) {
+      this.pos.line++
+      this.pos.column = 1
+    }
+
+    return token
+  }
+
+  peek () {
+    let token = this.text.charAt(this.pos.offset)
+    // Consume <CR>? <LF>
+    if (token === CR && this.text.charAt(this.pos.offset + 1) === LF) {
+      token += LF
+    }
+    return token
+  }
+
+  peekLiteral (literal) {
+    const str = this.text.substring(this.pos.offset, this.pos.offset + literal.length)
+    return literal === str
+  }
+
+  position () {
+    return { ...this.pos }
+  }
+
+  rewind (pos) {
+    this.pos = pos
+  }
+
+  enter (type, content) {
+    const position = { start: this.position() }
+    return Array.isArray(content)
+      ? { type, children: content, position }
+      : { type, value: content, position }
+  }
+
+  exit (node) {
+    node.position.end = this.position()
+    return node
+  }
+
+  abort (node, expectedTokens) {
+    const position = `${this.pos.line}:${this.pos.column}`
+    const validTokens = expectedTokens
+      ? expectedTokens.filter(Boolean).join(', ')
+      : `<${node.type}>`
+
+    const error = this.eof()
+      ? Error(`unexpected token EOF at ${position}, valid tokens [${validTokens}]`)
+      : Error(`unexpected token '${this.peek()}' at ${position}, valid tokens [${validTokens}]`)
+
+    this.rewind(node.position.start)
+    return error
+  }
+}
+
+module.exports = Scanner
 
 
 /***/ }),
@@ -3887,6 +4946,13 @@ module.exports = require("events");
 
 /***/ }),
 
+/***/ 622:
+/***/ (function(module) {
+
+module.exports = require("path");
+
+/***/ }),
+
 /***/ 631:
 /***/ (function(module) {
 
@@ -3898,6 +4964,92 @@ module.exports = require("net");
 /***/ (function(module) {
 
 module.exports = require("util");
+
+/***/ }),
+
+/***/ 676:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(469);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(470);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(752);
+/* harmony import */ var _parseCommitMessage__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+const {
+  repo: { owner, repo },
+} = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context;
+
+async function run() {
+  const token = Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput)("token");
+  const octokit = Object(_actions_github__WEBPACK_IMPORTED_MODULE_0__.getOctokit)(token);
+
+  // Find the two most recent tags
+  const { data: tags } = await octokit.repos.listTags({
+    owner,
+    repo,
+    per_page: 2,
+  });
+
+  if (tags.length !== 2) {
+    Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed)("Couldn't find previous tag");
+    return;
+  }
+
+  // Find the commits between two two tags
+  const result = await octokit.repos.compareCommits({
+    owner,
+    repo,
+    base: tags[1].commit.sha,
+    head: tags[0].commit.sha,
+  });
+
+  // Parse every commit, getting the type, turning PR numbers into links, etc
+  let commitObjects = result.data.commits
+    .map(commit => {
+      return Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.parseCommitMessage)(commit.commit.message, `https://github.com/${owner}/${repo}`);
+    })
+    .filter(m => m !== false);
+
+  // And generate the changelog
+  if (commitObjects.length == 0) {
+    Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changelog", "");
+    return;
+  }
+
+  let now = new Date();
+  let changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n`;
+
+  let commitsByType = Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.groupByType)(commitObjects);
+  const excludeString = Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput)("exclude") || "";
+  const excludeTypes = excludeString.split(",");
+
+  Object.keys(commitsByType)
+    .filter(type => { 
+      return !excludeTypes.includes(type)
+    })
+    .forEach(key => {
+      let commits = commitsByType[key];
+
+      let niceType = Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.translateType)(key);
+      changelog += `\n## ${niceType}\n`;
+
+      commits.forEach(commit => {
+        changelog += `- ${commit.subject}\n`;
+      });
+    });
+
+  Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changelog", changelog);
+}
+
+run();
+
 
 /***/ }),
 
@@ -3929,10 +5081,340 @@ exports.Deprecation = Deprecation;
 
 /***/ }),
 
+/***/ 710:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const visit = __webpack_require__(83)
+const visitWithAncestors = __webpack_require__(727)
+const NUMBER_REGEX = /^[0-9]+$/
+
+// Converts conventional commit AST into conventional-changelog's
+// output format, see: https://www.npmjs.com/package/conventional-commits-parser
+function toConventionalChangelogFormat (ast) {
+  const cc = {
+    body: '',
+    subject: '',
+    type: '',
+    scope: null,
+    notes: [],
+    references: [],
+    mentions: [],
+    merge: null,
+    revert: null,
+    header: '',
+    footer: null
+  }
+  // Separate the body and summary nodes, this simplifies the subsequent
+  // tree walking logic:
+  let body
+  let summary
+  visit(ast, ['body', 'summary'], (node) => {
+    switch (node.type) {
+      case 'body':
+        body = node
+        break
+      case 'summary':
+        summary = node
+        break
+    }
+  })
+
+  // <type>, "(", <scope>, ")", ["!"], ":", <whitespace>*, <text>
+  visit(summary, (node) => {
+    switch (node.type) {
+      case 'type':
+        cc.type = node.value
+        cc.header += node.value
+        break
+      case 'scope':
+        cc.scope = node.value
+        cc.header += `(${node.value})`
+        break
+      case 'breaking-change':
+        cc.header += '!'
+        break
+      case 'text':
+        cc.subject = node.value
+        cc.header += `: ${node.value}`
+        break
+      default:
+        break
+    }
+  })
+
+  // [<any body-text except pre-footer>]
+  if (body) {
+    visit(body, 'text', (node, _i, parent) => {
+      // TODO(@bcoe): once we have \n tokens in tree we can drop this:
+      if (cc.body !== '') cc.body += '\n'
+      cc.body += node.value
+    })
+  }
+
+  // Extract BREAKING CHANGE notes, regardless of whether they fall in
+  // summary, body, or footer:
+  const breaking = {
+    title: 'BREAKING CHANGE',
+    text: '' // "text" will be populated if a BREAKING CHANGE token is parsed.
+  }
+  visitWithAncestors(ast, ['breaking-change'], (node, ancestors) => {
+    let parent = ancestors.pop()
+    let startCollecting = false
+    switch (parent.type) {
+      case 'summary':
+        breaking.text = cc.subject
+        break
+      case 'body':
+        breaking.text = ''
+        // We treat text from the BREAKING CHANGE marker forward as
+        // the breaking change notes:
+        visit(parent, ['text', 'breaking-change'], (node) => {
+          // TODO(@bcoe): once we have \n tokens in tree we can drop this:
+          if (startCollecting && node.type === 'text') {
+            if (breaking.text !== '') breaking.text += '\n'
+            breaking.text += node.value
+          } else if (node.type === 'breaking-change') {
+            startCollecting = true
+          }
+        })
+        break
+      case 'token':
+        parent = ancestors.pop()
+        visit(parent, 'text', (node) => {
+          breaking.text = node.value
+        })
+        break
+    }
+  })
+  if (breaking.text !== '') cc.notes.push(breaking)
+
+  // Populates references array from footers:
+  // references: [{
+  //    action: 'Closes',
+  //    owner: null,
+  //    repository: null,
+  //    issue: '1', raw: '#1',
+  //    prefix: '#'
+  // }]
+  visit(ast, ['footer'], (node) => {
+    const reference = {
+      prefix: '#'
+    }
+    let hasRefSepartor = false
+    visit(node, ['type', 'separator', 'text'], (node) => {
+      switch (node.type) {
+        case 'type':
+          // refs, closes, etc:
+          // TODO(@bcoe): conventional-changelog does not currently use
+          // "reference.action" in its templates:
+          reference.action = node.value
+          break
+        case 'separator':
+          // Footer of the form "Refs #99":
+          if (node.value.includes('#')) hasRefSepartor = true
+          break
+        case 'text':
+          // Footer of the form "Refs: #99"
+          if (node.value.charAt(0) === '#') {
+            hasRefSepartor = true
+            reference.issue = node.value.substring(1)
+          // TODO(@bcoe): what about references like "Refs: #99, #102"?
+          } else {
+            reference.issue = node.value
+          }
+          break
+      }
+    })
+    // TODO(@bcoe): how should references like "Refs: v8:8940" work.
+    if (hasRefSepartor && reference.issue.match(NUMBER_REGEX)) {
+      cc.references.push(reference)
+    }
+  })
+
+  return cc
+}
+
+module.exports = {
+  toConventionalChangelogFormat
+}
+
+
+/***/ }),
+
+/***/ 727:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = visitParents
+
+var convert = __webpack_require__(487)
+var color = __webpack_require__(876)
+
+var CONTINUE = true
+var SKIP = 'skip'
+var EXIT = false
+
+visitParents.CONTINUE = CONTINUE
+visitParents.SKIP = SKIP
+visitParents.EXIT = EXIT
+
+function visitParents(tree, test, visitor, reverse) {
+  var step
+  var is
+
+  if (typeof test === 'function' && typeof visitor !== 'function') {
+    reverse = visitor
+    visitor = test
+    test = null
+  }
+
+  is = convert(test)
+  step = reverse ? -1 : 1
+
+  factory(tree, null, [])()
+
+  function factory(node, index, parents) {
+    var value = typeof node === 'object' && node !== null ? node : {}
+    var name
+
+    if (typeof value.type === 'string') {
+      name =
+        typeof value.tagName === 'string'
+          ? value.tagName
+          : typeof value.name === 'string'
+          ? value.name
+          : undefined
+
+      visit.displayName =
+        'node (' + color(value.type + (name ? '<' + name + '>' : '')) + ')'
+    }
+
+    return visit
+
+    function visit() {
+      var grandparents = parents.concat(node)
+      var result = []
+      var subresult
+      var offset
+
+      if (!test || is(node, index, parents[parents.length - 1] || null)) {
+        result = toResult(visitor(node, parents))
+
+        if (result[0] === EXIT) {
+          return result
+        }
+      }
+
+      if (node.children && result[0] !== SKIP) {
+        offset = (reverse ? node.children.length : -1) + step
+
+        while (offset > -1 && offset < node.children.length) {
+          subresult = factory(node.children[offset], offset, grandparents)()
+
+          if (subresult[0] === EXIT) {
+            return subresult
+          }
+
+          offset =
+            typeof subresult[1] === 'number' ? subresult[1] : offset + step
+        }
+      }
+
+      return result
+    }
+  }
+}
+
+function toResult(value) {
+  if (value !== null && typeof value === 'object' && 'length' in value) {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return [CONTINUE, value]
+  }
+
+  return [value]
+}
+
+
+/***/ }),
+
 /***/ 747:
 /***/ (function(module) {
 
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 752:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { parser, toConventionalChangelogFormat } = __webpack_require__(205);
+
+const PR_REGEX = /#([1-9]\d*)/g;
+
+function parseCommitMessage(message, repoUrl) {
+  let cAst;
+
+  try {
+    const ast = parser(message);
+    cAst = toConventionalChangelogFormat(ast);
+  } catch (error) {
+    // Not a valid commit
+    cAst = {
+      subject: message.split("\n")[0],
+      type: "other",
+    };
+  }
+
+  cAst.subject = cAst.subject.replace(
+    PR_REGEX,
+    (match, pull) => `[${match}](${repoUrl}/pull/${pull})`,
+  );
+
+  return cAst;
+}
+
+function groupByType(commits) {
+  let byType = {};
+
+  commits.forEach(commit => {
+    if (!byType[commit.type]) {
+      byType[commit.type] = [];
+    }
+    byType[commit.type].push(commit);
+  });
+
+  return byType;
+}
+
+const TYPES = {
+  feat: "New Features",
+  fix: "Bugfixes",
+  other: "Other Changes",
+  chore: "Chores",
+  build: "Build System",
+  perf: "Performance Improvements",
+  style: "Code Style Changes",
+  refactor: "Refactors",
+}
+
+function translateType(type) {
+  if (TYPES[type]) {
+    return TYPES[type];
+  }
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+module.exports = {
+  parseCommitMessage,
+  groupByType,
+  translateType,
+};
+
 
 /***/ }),
 
@@ -4128,6 +5610,23 @@ function getUserAgent() {
 
 exports.getUserAgent = getUserAgent;
 //# sourceMappingURL=index.js.map
+
+
+/***/ }),
+
+/***/ 801:
+/***/ (function(module) {
+
+module.exports = {
+  CR: '\u000d',
+  LF: '\u000a',
+  ZWNBSP: '\ufeff',
+  TAB: '\u0009',
+  VT: '\u000b',
+  FF: '\u000c',
+  SP: '\u0020',
+  NBSP: '\u00a0'
+}
 
 
 /***/ }),
@@ -5369,6 +6868,17 @@ function removeHook(state, name, method) {
 
 /***/ }),
 
+/***/ 876:
+/***/ (function(module) {
+
+module.exports = color
+function color(d) {
+  return '\u001B[33m' + d + '\u001B[39m'
+}
+
+
+/***/ }),
+
 /***/ 898:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -5550,4 +7060,43 @@ exports.checkBypass = checkBypass;
 
 /***/ })
 
-/******/ });
+/******/ },
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function getDefault() { return module['default']; } :
+/******/ 				function getModuleExports() { return module; };
+/******/ 			__webpack_require__.d(getter, 'a', getter);
+/******/ 			return getter;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getter */
+/******/ 	!function() {
+/******/ 		// define getter function for harmony exports
+/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
+/******/ 		__webpack_require__.d = function(exports, name, getter) {
+/******/ 			if(!hasOwnProperty.call(exports, name)) {
+/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ }
+);

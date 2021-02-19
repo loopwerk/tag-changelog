@@ -4,6 +4,9 @@ inputs:
   token:
     description: Github repository token
     required: true
+  exclude:
+    description: Which commit types to exclude, comma separated string
+    required: false
 outputs:
   changelog:
     description: Generated changelog for the latest tag
