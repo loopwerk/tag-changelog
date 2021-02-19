@@ -5045,7 +5045,7 @@ async function run() {
     });
 
   const now = new Date();
-  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes;
+  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
 
   Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(changelog);
   Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changelog", changelog);

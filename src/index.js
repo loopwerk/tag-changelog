@@ -65,7 +65,7 @@ async function run() {
     });
 
   const now = new Date();
-  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes;
+  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
 
   info(changelog);
   setOutput("changelog", changelog);
