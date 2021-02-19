@@ -10,7 +10,7 @@ inputs:
 outputs:
   changelog:
     description: Generated changelog for the latest tag
-  changelog:
+  changes:
     description: Generated changelog for the latest tag, without the version/date header
 runs:
   using: node12
