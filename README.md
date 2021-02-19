@@ -26,8 +26,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude: other,perf
-          
-			- name: Create release
+
+      - name: Create release
         uses: actions/create-release@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

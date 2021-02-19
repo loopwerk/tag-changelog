@@ -10,10 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Locally
         uses: actions/checkout@v2
+        if: ${{ env.ACT }}
         with:
           path: "conventional-changelog-action"
+      - name: Checkout GitHub
+        uses: actions/checkout@v2
+        if: ${{ !env.ACT }}
       - name: Create changelog
         uses: ./
         with:
