@@ -46,7 +46,7 @@ jobs:
 * `changes`: Generated changelog for the latest tag, without the version/date header.
 
 ## Roadmap
-This Actions is very simple, and not very configurable yet. 
+This action is very simple, and not very configurable yet. 
 
 - It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
 - The mapping from raw type (like `feat`) to changelog header (like `New Features`) would also be good to have configurable. 

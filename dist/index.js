@@ -5020,15 +5020,14 @@ async function run() {
   // And generate the changelog
   if (commitObjects.length == 0) {
     Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changelog", "");
+    Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changes", "");
     return;
   }
 
-  let now = new Date();
-  let changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n`;
-
-  let commitsByType = Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.groupByType)(commitObjects);
+  const commitsByType = Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.groupByType)(commitObjects);
   const excludeString = Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput)("exclude") || "";
   const excludeTypes = excludeString.split(",");
+  let changes = "";
 
   Object.keys(commitsByType)
     .filter(type => { 
@@ -5038,14 +5037,19 @@ async function run() {
       let commits = commitsByType[key];
 
       let niceType = Object(_parseCommitMessage__WEBPACK_IMPORTED_MODULE_2__.translateType)(key);
-      changelog += `\n## ${niceType}\n`;
+      changes += `\n## ${niceType}\n`;
 
       commits.forEach(commit => {
-        changelog += `- ${commit.subject}\n`;
+        changes += `- ${commit.subject}\n`;
       });
     });
 
+  const now = new Date();
+  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes;
+
+  Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.info)(changelog);
   Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changelog", changelog);
+  Object(_actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput)("changes", changes);
 }
 
 run();
