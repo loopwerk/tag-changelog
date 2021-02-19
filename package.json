@@ -1,0 +1,19 @@
+{
+  "name": "conventional-changelog-action",
+  "version": "0.0.1",
+  "description": "Automatically generate a changelog since the last tag, using the conventional commit format",
+  "main": "index.js",
+  "scripts": {
+    "package": "ncc build index.js -o dist",
+    "run": "npm run package && act"
+  },
+  "author": "Kevin Renskers",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.22.3"
+  }
+}

@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  create-changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: "conventional-changelog-action"
+      - name: Create changelog
+        uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

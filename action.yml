@@ -1,0 +1,12 @@
+name: Conventional Changelog Action
+description: Automatically generate a changelog since the last tag, using the conventional commit format
+inputs:
+  token:
+    description: Github repository token
+    required: true
+outputs:
+  changelog:
+    description: Generated changelog for the latest tag
+runs:
+  using: node12
+  main: "dist/index.js"
