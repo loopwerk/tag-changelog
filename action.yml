@@ -1,5 +1,9 @@
-name: Conventional Changelog Action
+name: Tag Changelog
 description: Automatically generate a changelog since the last tag, using the conventional commit format
+author: Loopwerk
+branding:
+  icon: align-left
+  color: orange
 inputs:
   token:
     description: Github repository token

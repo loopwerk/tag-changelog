@@ -1,4 +1,4 @@
-# conventional-changelog-action
+# tag-changelog
 A GitHub Action triggered by a new tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links.
 
 This action returns the generated changelog text, but doesn't do anything more; you need to for example append it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc. A full example doing all these things is given below.

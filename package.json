@@ -1,5 +1,5 @@
 {
-  "name": "conventional-changelog-action",
+  "name": "tag-changelog",
   "version": "0.0.1",
   "description": "Automatically generate a changelog since the last tag, using the conventional commit format",
   "main": "dist/index.js",
@@ -7,7 +7,7 @@
     "package": "ncc build src/index.js -o dist",
     "act": "npm run package && act"
   },
-  "author": "Kevin Renskers",
+  "author": "Loopwerk",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
