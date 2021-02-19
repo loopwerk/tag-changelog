@@ -22,7 +22,7 @@ jobs:
 
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/conventional-changelog-action@latest
+        uses: loopwerk/conventional-changelog-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude: other,perf

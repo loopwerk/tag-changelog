@@ -44,11 +44,11 @@ jobs:
           path: ./CHANGELOG.md
 
       - name: Write to CHANGELOG.md
-        uses: DamianReeves/write-file-action@latest
+        uses: DamianReeves/write-file-action@master
         if: ${{ !env.ACT }}
         with:
           path: ./CHANGELOG.md
-          contents: ${{ steps.changelog.outputs.changes }}${{ steps.package.outputs.content }}
+          contents: ${{ steps.changelog.outputs.changelog }}${{ steps.package.outputs.content }}
           write-mode: overwrite
 
       - name: Commit and push CHANGELOG.md
