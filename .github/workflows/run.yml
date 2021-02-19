@@ -24,6 +24,7 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          exclude: chore
 
       - name: Create release
         uses: actions/create-release@latest
@@ -34,3 +35,25 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: ${{ steps.changelog.outputs.changes }}
+
+      - name: Read CHANGELOG.md
+        id: package
+        uses: juliangruber/read-file-action@v1
+        if: ${{ !env.ACT }}
+        with:
+          path: ./CHANGELOG.md
+
+      - name: Write to CHANGELOG.md
+        uses: DamianReeves/write-file-action
+        if: ${{ !env.ACT }}
+        with:
+          path: ./CHANGELOG.md
+          contents: ${{ steps.changelog.outputs.changes }}${{ steps.package.outputs.content }}
+          write-mode: overwrite
+
+      - name: Commit and push CHANGELOG.md
+        uses: EndBug/add-and-commit@v7
+        if: ${{ !env.ACT }}
+        with:
+          add: CHANGELOG.md
+          message: "doc: Update CHANGELOG.md"
