@@ -37,7 +37,7 @@ jobs:
           body: ${{ steps.changelog.outputs.changes }}
 
       - name: Read CHANGELOG.md
-        id: package
+        id: readfile
         uses: juliangruber/read-file-action@v1
         with:
           path: ./CHANGELOG.md
@@ -46,7 +46,7 @@ jobs:
         uses: DamianReeves/write-file-action@master
         with:
           path: ./CHANGELOG.md
-          contents: ${{ steps.changelog.outputs.changelog }}${{ steps.package.outputs.content }}
+          contents: ${{ steps.changelog.outputs.changelog }}${{ steps.readfile.outputs.content }}
           write-mode: overwrite
 
       - name: Commit and push CHANGELOG.md

@@ -1,6 +1,7 @@
-import { context, getOctokit } from "@actions/github";
-import { info, getInput, setOutput, setFailed } from "@actions/core";
-import { parseCommitMessage, groupByType, translateType } from "./parseCommitMessage";
+const { context, getOctokit } = require("@actions/github");
+const { info, getInput, setOutput, setFailed } = require("@actions/core");
+const parseCommitMessage = require("./parseCommitMessage");
+const generateChangelog = require("./generateChangelog");
 
 const {
   repo: { owner, repo },
@@ -22,7 +23,7 @@ async function run() {
     return;
   }
 
-  // Find the commits between two two tags
+  // Find the commits between two tags
   const result = await octokit.repos.compareCommits({
     owner,
     repo,
@@ -31,45 +32,26 @@ async function run() {
   });
 
   // Parse every commit, getting the type, turning PR numbers into links, etc
-  let commitObjects = result.data.commits
-    .map(commit => {
+  const commitObjects = result.data.commits
+    .map((commit) => {
       return parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`);
     })
-    .filter(m => m !== false);
+    .filter((m) => m !== false);
 
   // And generate the changelog
-  if (commitObjects.length == 0) {
+  if (commitObjects.length === 0) {
     setOutput("changelog", "");
     setOutput("changes", "");
     return;
   }
 
-  const commitsByType = groupByType(commitObjects);
   const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  let changes = "";
+  const log = generateChangelog(tags[0], commitObjects, excludeTypes);
 
-  Object.keys(commitsByType)
-    .filter(type => { 
-      return !excludeTypes.includes(type)
-    })
-    .forEach(key => {
-      let commits = commitsByType[key];
-
-      let niceType = translateType(key);
-      changes += `\n## ${niceType}\n`;
-
-      commits.forEach(commit => {
-        changes += `- ${commit.subject}\n`;
-      });
-    });
-
-  const now = new Date();
-  const changelog = `# ${tags[0].name} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
-
-  info(changelog);
-  setOutput("changelog", changelog);
-  setOutput("changes", changes);
+  info(log.changelog);
+  setOutput("changelog", log.changelog);
+  setOutput("changes", log.changes);
 }
 
 run();
