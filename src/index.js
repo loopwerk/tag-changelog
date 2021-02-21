@@ -1,7 +1,10 @@
 const { context, getOctokit } = require("@actions/github");
 const { info, getInput, setOutput, setFailed } = require("@actions/core");
+const compareVersions = require("compare-versions");
+
 const parseCommitMessage = require("./parseCommitMessage");
 const generateChangelog = require("./generateChangelog");
+const { DEFAULT_TYPES } = require("./translateType");
 
 const {
   repo: { owner, repo },
@@ -15,10 +18,17 @@ async function run() {
   const { data: tags } = await octokit.repos.listTags({
     owner,
     repo,
-    per_page: 2,
+    per_page: 10,
   });
 
-  if (tags.length !== 2) {
+  const validSortedTags = tags
+    .filter((t) => compareVersions.validate(t.name))
+    .sort((a, b) => {
+      return compareVersions(a.name, b.name);
+    })
+    .reverse();
+
+  if (validSortedTags.length < 2) {
     setFailed("Couldn't find previous tag");
     return;
   }
@@ -27,8 +37,8 @@ async function run() {
   const result = await octokit.repos.compareCommits({
     owner,
     repo,
-    base: tags[1].commit.sha,
-    head: tags[0].commit.sha,
+    base: validSortedTags[1].commit.sha,
+    head: validSortedTags[0].commit.sha,
   });
 
   const fetchUserFunc = async function (pullNumber) {
@@ -45,11 +55,13 @@ async function run() {
   };
 
   // Parse every commit, getting the type, turning PR numbers into links, etc
-  const commitObjects = result.data.commits
-    .map(async (commit) => {
-      return await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
-    })
-    .filter((m) => m !== false);
+  const commitObjects = await Promise.all(
+    result.data.commits
+      .map(async (commit) => {
+        return await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
+      })
+      .filter((m) => m !== false)
+  );
 
   // And generate the changelog
   if (commitObjects.length === 0) {
@@ -60,7 +72,7 @@ async function run() {
 
   const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(tags[0].name, commitObjects, excludeTypes);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, DEFAULT_TYPES);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);

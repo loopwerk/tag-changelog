@@ -1,23 +1,26 @@
-const TYPES = {
-  feat: { label: "New Features", order: 0 },
-  fix: { label: "Bugfixes", order: 1 },
-  perf: { label: "Performance Improvements", order: 2 },
-  build: { label: "Build System", order: 3 },
-  refactor: { label: "Refactors", order: 4 },
-  doc: { label: "Documentation Changes", order: 5 },
-  style: { label: "Code Style Changes", order: 6 },
-  chore: { label: "Chores", order: 7 },
-  other: { label: "Other Changes", order: 8 },
-};
+const DEFAULT_TYPES = [
+  { types: ["feat", "feature"], label: "New Features" },
+  { types: ["fix", "bugfix"], label: "Bugfixes" },
+  { types: ["improvements", "enhancement"], label: "Improvements" },
+  { types: ["perf"], label: "Performance Improvements" },
+  { types: ["build", "ci"], label: "Build System" },
+  { types: ["refactor"], label: "Refactors" },
+  { types: ["doc", "docs"], label: "Documentation Changes" },
+  { types: ["test", "tests"], label: "Tests" },
+  { types: ["style"], label: "Code Style Changes" },
+  { types: ["chore"], label: "Chores" },
+  { types: ["other"], label: "Other Changes" },
+];
 
-function translateType(type) {
-  if (TYPES[type]) {
-    return TYPES[type].label;
+function translateType(type, typeConfig) {
+  const foundType = typeConfig.find((t) => t.types.includes(type));
+  if (foundType) {
+    return foundType.label;
   }
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 module.exports = {
-  TYPES,
+  DEFAULT_TYPES,
   translateType,
 };

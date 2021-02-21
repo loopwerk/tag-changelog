@@ -1,6 +1,4 @@
-const { TYPES } = require("./translateType");
-
-function groupByType(commits) {
+function groupByType(commits, typeConfig) {
   // First, group all the commits by their types.
   // We end up with a dictionary where the key is the type, and the values is an array of commits.
   const byType = {};
@@ -23,8 +21,10 @@ function groupByType(commits) {
 
   // And now we sort that array using the TYPES object.
   byTypeArray.sort((a, b) => {
-    const aOrder = TYPES[a.type] ? TYPES[a.type].order : 999;
-    const bOrder = TYPES[b.type] ? TYPES[b.type].order : 999;
+    let aOrder = typeConfig.findIndex((t) => t.types.includes(a.type));
+    if (aOrder === -1) aOrder = 999;
+    let bOrder = typeConfig.findIndex((t) => t.types.includes(b.type));
+    if (bOrder === -1) bOrder = 999;
     return aOrder - bOrder;
   });
 

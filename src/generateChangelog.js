@@ -1,8 +1,8 @@
 const groupByType = require("./groupByType");
 const { translateType } = require("./translateType");
 
-function generateChangelog(releaseName, commitObjects, excludeTypes) {
-  const commitsByType = groupByType(commitObjects);
+function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig) {
+  const commitsByType = groupByType(commitObjects, typeConfig);
   let changes = "";
 
   commitsByType
@@ -10,7 +10,7 @@ function generateChangelog(releaseName, commitObjects, excludeTypes) {
       return !excludeTypes.includes(obj.type);
     })
     .forEach((obj) => {
-      const niceType = translateType(obj.type);
+      const niceType = translateType(obj.type, typeConfig);
       changes += `\n## ${niceType}\n`;
 
       obj.commits.forEach((commit) => {

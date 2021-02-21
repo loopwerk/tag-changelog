@@ -4397,6 +4397,126 @@ function removeHook(state, name, method) {
 
 /***/ }),
 
+/***/ 9296:
+/***/ (function(module) {
+
+/* global define */
+(function (root, factory) {
+  /* istanbul ignore next */
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (true) {
+    module.exports = factory();
+  } else {}
+}(this, function () {
+
+  var semver = /^v?(?:\d+)(\.(?:[x*]|\d+)(\.(?:[x*]|\d+)(\.(?:[x*]|\d+))?(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?)?)?$/i;
+
+  function indexOrEnd(str, q) {
+    return str.indexOf(q) === -1 ? str.length : str.indexOf(q);
+  }
+
+  function split(v) {
+    var c = v.replace(/^v/, '').replace(/\+.*$/, '');
+    var patchIndex = indexOrEnd(c, '-');
+    var arr = c.substring(0, patchIndex).split('.');
+    arr.push(c.substring(patchIndex + 1));
+    return arr;
+  }
+
+  function tryParse(v) {
+    return isNaN(Number(v)) ? v : Number(v);
+  }
+
+  function validate(version) {
+    if (typeof version !== 'string') {
+      throw new TypeError('Invalid argument expected string');
+    }
+    if (!semver.test(version)) {
+      throw new Error('Invalid argument not valid semver (\''+version+'\' received)');
+    }
+  }
+
+  function compareVersions(v1, v2) {
+    [v1, v2].forEach(validate);
+
+    var s1 = split(v1);
+    var s2 = split(v2);
+
+    for (var i = 0; i < Math.max(s1.length - 1, s2.length - 1); i++) {
+      var n1 = parseInt(s1[i] || 0, 10);
+      var n2 = parseInt(s2[i] || 0, 10);
+
+      if (n1 > n2) return 1;
+      if (n2 > n1) return -1;
+    }
+
+    var sp1 = s1[s1.length - 1];
+    var sp2 = s2[s2.length - 1];
+
+    if (sp1 && sp2) {
+      var p1 = sp1.split('.').map(tryParse);
+      var p2 = sp2.split('.').map(tryParse);
+
+      for (i = 0; i < Math.max(p1.length, p2.length); i++) {
+        if (p1[i] === undefined || typeof p2[i] === 'string' && typeof p1[i] === 'number') return -1;
+        if (p2[i] === undefined || typeof p1[i] === 'string' && typeof p2[i] === 'number') return 1;
+
+        if (p1[i] > p2[i]) return 1;
+        if (p2[i] > p1[i]) return -1;
+      }
+    } else if (sp1 || sp2) {
+      return sp1 ? -1 : 1;
+    }
+
+    return 0;
+  };
+
+  var allowedOperators = [
+    '>',
+    '>=',
+    '=',
+    '<',
+    '<='
+  ];
+
+  var operatorResMap = {
+    '>': [1],
+    '>=': [0, 1],
+    '=': [0],
+    '<=': [-1, 0],
+    '<': [-1]
+  };
+
+  function validateOperator(op) {
+    if (typeof op !== 'string') {
+      throw new TypeError('Invalid operator type, expected string but got ' + typeof op);
+    }
+    if (allowedOperators.indexOf(op) === -1) {
+      throw new TypeError('Invalid operator, expected one of ' + allowedOperators.join('|'));
+    }
+  }
+
+  compareVersions.validate = function(version) {
+    return typeof version === 'string' && semver.test(version);
+  }
+
+  compareVersions.compare = function (v1, v2, operator) {
+    // Validate operator
+    validateOperator(operator);
+
+    // since result of compareVersions can only be -1 or 0 or 1
+    // a simple map can be used to replace switch
+    var res = compareVersions(v1, v2);
+    return operatorResMap[operator].indexOf(res) > -1;
+  }
+
+  return compareVersions;
+}));
+
+
+/***/ }),
+
 /***/ 8932:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -6763,8 +6883,8 @@ function wrappy (fn, cb) {
 const groupByType = __nccwpck_require__(2243);
 const { translateType } = __nccwpck_require__(2820);
 
-function generateChangelog(releaseName, commitObjects, excludeTypes) {
-  const commitsByType = groupByType(commitObjects);
+function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig) {
+  const commitsByType = groupByType(commitObjects, typeConfig);
   let changes = "";
 
   commitsByType
@@ -6772,7 +6892,7 @@ function generateChangelog(releaseName, commitObjects, excludeTypes) {
       return !excludeTypes.includes(obj.type);
     })
     .forEach((obj) => {
-      const niceType = translateType(obj.type);
+      const niceType = translateType(obj.type, typeConfig);
       changes += `\n## ${niceType}\n`;
 
       obj.commits.forEach((commit) => {
@@ -6795,11 +6915,9 @@ module.exports = generateChangelog;
 /***/ }),
 
 /***/ 2243:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ ((module) => {
 
-const { TYPES } = __nccwpck_require__(2820);
-
-function groupByType(commits) {
+function groupByType(commits, typeConfig) {
   // First, group all the commits by their types.
   // We end up with a dictionary where the key is the type, and the values is an array of commits.
   const byType = {};
@@ -6822,8 +6940,10 @@ function groupByType(commits) {
 
   // And now we sort that array using the TYPES object.
   byTypeArray.sort((a, b) => {
-    const aOrder = TYPES[a.type] ? TYPES[a.type].order : 999;
-    const bOrder = TYPES[b.type] ? TYPES[b.type].order : 999;
+    let aOrder = typeConfig.findIndex((t) => t.types.includes(a.type));
+    if (aOrder === -1) aOrder = 999;
+    let bOrder = typeConfig.findIndex((t) => t.types.includes(b.type));
+    if (bOrder === -1) bOrder = 999;
     return aOrder - bOrder;
   });
 
@@ -6840,8 +6960,11 @@ module.exports = groupByType;
 
 const { context, getOctokit } = __nccwpck_require__(5438);
 const { info, getInput, setOutput, setFailed } = __nccwpck_require__(2186);
+const compareVersions = __nccwpck_require__(9296);
+
 const parseCommitMessage = __nccwpck_require__(5646);
 const generateChangelog = __nccwpck_require__(473);
+const { DEFAULT_TYPES } = __nccwpck_require__(2820);
 
 const {
   repo: { owner, repo },
@@ -6855,10 +6978,17 @@ async function run() {
   const { data: tags } = await octokit.repos.listTags({
     owner,
     repo,
-    per_page: 2,
+    per_page: 10,
   });
 
-  if (tags.length !== 2) {
+  const validSortedTags = tags
+    .filter((t) => compareVersions.validate(t.name))
+    .sort((a, b) => {
+      return compareVersions(a.name, b.name);
+    })
+    .reverse();
+
+  if (validSortedTags.length < 2) {
     setFailed("Couldn't find previous tag");
     return;
   }
@@ -6867,8 +6997,8 @@ async function run() {
   const result = await octokit.repos.compareCommits({
     owner,
     repo,
-    base: tags[1].commit.sha,
-    head: tags[0].commit.sha,
+    base: validSortedTags[1].commit.sha,
+    head: validSortedTags[0].commit.sha,
   });
 
   const fetchUserFunc = async function (pullNumber) {
@@ -6885,11 +7015,13 @@ async function run() {
   };
 
   // Parse every commit, getting the type, turning PR numbers into links, etc
-  const commitObjects = result.data.commits
-    .map((commit) => {
-      return parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
-    })
-    .filter((m) => m !== false);
+  const commitObjects = await Promise.all(
+    result.data.commits
+      .map(async (commit) => {
+        return await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
+      })
+      .filter((m) => m !== false)
+  );
 
   // And generate the changelog
   if (commitObjects.length === 0) {
@@ -6900,7 +7032,7 @@ async function run() {
 
   const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(tags[0].name, commitObjects, excludeTypes);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, DEFAULT_TYPES);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);
@@ -6937,7 +7069,7 @@ async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
   if (found) {
     const pullNumber = found[1];
     const { username, userUrl } = await fetchUserFunc(pullNumber);
-    cAst.subject = cAst.subject.replace(PR_REGEX, (match, pull) => `[${match}](${repoUrl}/pull/${pull}) ([${username}](${userUrl}))`);
+    cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
   }
 
   return cAst;
@@ -6951,27 +7083,30 @@ module.exports = parseCommitMessage;
 /***/ 2820:
 /***/ ((module) => {
 
-const TYPES = {
-  feat: { label: "New Features", order: 0 },
-  fix: { label: "Bugfixes", order: 1 },
-  perf: { label: "Performance Improvements", order: 2 },
-  build: { label: "Build System", order: 3 },
-  refactor: { label: "Refactors", order: 4 },
-  doc: { label: "Documentation Changes", order: 5 },
-  style: { label: "Code Style Changes", order: 6 },
-  chore: { label: "Chores", order: 7 },
-  other: { label: "Other Changes", order: 8 },
-};
+const DEFAULT_TYPES = [
+  { types: ["feat", "feature"], label: "New Features" },
+  { types: ["fix", "bugfix"], label: "Bugfixes" },
+  { types: ["improvements", "enhancement"], label: "Improvements" },
+  { types: ["perf"], label: "Performance Improvements" },
+  { types: ["build", "ci"], label: "Build System" },
+  { types: ["refactor"], label: "Refactors" },
+  { types: ["doc", "docs"], label: "Documentation Changes" },
+  { types: ["test", "tests"], label: "Tests" },
+  { types: ["style"], label: "Code Style Changes" },
+  { types: ["chore"], label: "Chores" },
+  { types: ["other"], label: "Other Changes" },
+];
 
-function translateType(type) {
-  if (TYPES[type]) {
-    return TYPES[type].label;
+function translateType(type, typeConfig) {
+  const foundType = typeConfig.find((t) => t.types.includes(type));
+  if (foundType) {
+    return foundType.label;
   }
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 module.exports = {
-  TYPES,
+  DEFAULT_TYPES,
   translateType,
 };
 

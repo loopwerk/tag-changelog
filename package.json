@@ -4,7 +4,7 @@
   "description": "Automatically generate a changelog since the last tag, using the conventional commit format",
   "main": "dist/index.js",
   "scripts": {
-    "package": "ncc build src/index.js -o dist",
+    "package": "npm run lint && ncc build src/index.js -o dist",
     "act": "npm run package && act",
     "lint": "eslint src --fix",
     "test": "mocha 'test/*.spec.js'"
@@ -14,7 +14,8 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
-    "@conventional-commits/parser": "^0.4.1"
+    "@conventional-commits/parser": "^0.4.1",
+    "compare-versions": "^3.6.0"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.27.0",

@@ -2,6 +2,7 @@
 
 const assert = require("assert");
 const groupByType = require("../src/groupByType");
+const { DEFAULT_TYPES } = require("../src/translateType");
 
 describe("groupByType", () => {
   it("should group and sort commits by type", () => {
@@ -33,7 +34,7 @@ describe("groupByType", () => {
       { type: "nonexisting", commits: [{ subject: "Subject 2", type: "nonexisting" }] },
     ];
 
-    const result = groupByType(commits);
+    const result = groupByType(commits, DEFAULT_TYPES);
     assert.deepStrictEqual(result, expected);
   });
 
@@ -59,7 +60,7 @@ describe("groupByType", () => {
       { type: "other", commits: [{ subject: "Subject 0", type: "other" }] },
     ];
 
-    const result = groupByType(commits);
+    const result = groupByType(commits, DEFAULT_TYPES);
     assert.notDeepStrictEqual(result, notExpected);
     assert.deepStrictEqual(result, expected);
   });
