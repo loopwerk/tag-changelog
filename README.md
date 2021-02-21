@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.jpg" width="400" alt="tag-changelog" />
+</p>
+
 # tag-changelog
 A GitHub Action triggered by a new tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links.
 
