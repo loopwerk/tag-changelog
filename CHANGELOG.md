@@ -1,3 +1,9 @@
+# 0.11.0 - 2021-02-21
+
+## Bugfixes
+- Fixed the tag name in the changelog header
+
+
 # 0.10.0 - 2021-02-21
 
 ## New Features
