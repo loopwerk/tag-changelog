@@ -25,7 +25,7 @@ jobs:
         uses: loopwerk/conventional-changelog-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          exclude: other,perf
+          exclude: other,doc
 
       - name: Create release
         uses: actions/create-release@latest
