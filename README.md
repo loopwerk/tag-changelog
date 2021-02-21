@@ -71,7 +71,6 @@ This action is very simple, and not very configurable yet.
 - It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
 - The mapping from raw type (like `feat`) to changelog header (like `New Features`) would also be good to have configurable. 
 - Mentioning the author of a PR within the changelog would be good.
-- Configure the ordering of the types.
 - Display breaking changes notes.
 
 ## Thanks

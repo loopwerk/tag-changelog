@@ -1,7 +1,7 @@
 /* eslint-env node, mocha */
 
 const assert = require("assert");
-const translateType = require("../src/translateType");
+const { translateType } = require("../src/translateType");
 
 describe("translateType", () => {
   it("should translate a type", () => {

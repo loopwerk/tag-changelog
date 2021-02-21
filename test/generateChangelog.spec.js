@@ -6,39 +6,42 @@ const generateChangelog = require("../src/generateChangelog");
 describe("generateChangelog", () => {
   it("should create a changelog", () => {
     const commitObjects = [
-      { subject: "Subject 1", type: "feat" },
+      { subject: "Subject 1", type: "fix" },
       { subject: "Subject 2", type: "feat" },
-      { subject: "Subject 3", type: "fix" },
-      { subject: "Subject 4", type: "feat" },
-      { subject: "Subject 5", type: "fix" },
+      { subject: "Subject 3", type: "feat" },
+      { subject: "Subject 4", type: "fix" },
+      { subject: "Subject 5", type: "feat" },
+      { subject: "Subject 6", type: "other" },
     ];
+
+    const dateString = new Date().toISOString().substr(0, 10);
 
     const expectedChanges = `
 ## New Features
-- Subject 1
 - Subject 2
-- Subject 4
-
-## Bugfixes
 - Subject 3
 - Subject 5
+
+## Bugfixes
+- Subject 1
+- Subject 4
 `;
 
-    const expectedChangelog = `# 0.0.1 - 2021-02-20
+    const expectedChangelog = `# 0.0.1 - ${dateString}
 
 ## New Features
-- Subject 1
 - Subject 2
-- Subject 4
-
-## Bugfixes
 - Subject 3
 - Subject 5
+
+## Bugfixes
+- Subject 1
+- Subject 4
 
 
 `;
 
-    const result = generateChangelog("0.0.1", commitObjects, []);
+    const result = generateChangelog("0.0.1", commitObjects, ["other"]);
     assert.strictEqual(result.changes, expectedChanges);
     assert.strictEqual(result.changelog, expectedChangelog);
   });
