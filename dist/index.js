@@ -6758,31 +6758,24 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 473:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => /* binding */ generateChangelog
-/* harmony export */ });
 const groupByType = __nccwpck_require__(2243);
-const translateType = __nccwpck_require__(2820);
+const { translateType } = __nccwpck_require__(2820);
 
 function generateChangelog(releaseName, commitObjects, excludeTypes) {
   const commitsByType = groupByType(commitObjects);
   let changes = "";
 
-  Object.keys(commitsByType)
-    .filter((type) => {
-      return !excludeTypes.includes(type);
+  commitsByType
+    .filter((obj) => {
+      return !excludeTypes.includes(obj.type);
     })
-    .forEach((key) => {
-      const commits = commitsByType[key];
-
-      const niceType = translateType(key);
+    .forEach((obj) => {
+      const niceType = translateType(obj.type);
       changes += `\n## ${niceType}\n`;
 
-      commits.forEach((commit) => {
+      obj.commits.forEach((commit) => {
         changes += `- ${commit.subject}\n`;
       });
     });
@@ -6796,15 +6789,20 @@ function generateChangelog(releaseName, commitObjects, excludeTypes) {
   };
 }
 
+module.exports = generateChangelog;
+
 
 /***/ }),
 
 /***/ 2243:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { TYPES } = __nccwpck_require__(2820);
 
 function groupByType(commits) {
+  // First, group all the commits by their types.
+  // We end up with a dictionary where the key is the type, and the values is an array of commits.
   const byType = {};
-
   commits.forEach((commit) => {
     if (!byType[commit.type]) {
       byType[commit.type] = [];
@@ -6812,7 +6810,24 @@ function groupByType(commits) {
     byType[commit.type].push(commit);
   });
 
-  return byType;
+  // Turn that dictionary into an array of objects,
+  // where the key is the type, and the values is an array of commits.
+  const byTypeArray = [];
+  Object.keys(byType).forEach((key) => {
+    byTypeArray.push({
+      type: key,
+      commits: byType[key],
+    });
+  });
+
+  // And now we sort that array using the TYPES object.
+  byTypeArray.sort((a, b) => {
+    const aOrder = TYPES[a.type] ? TYPES[a.type].order : 999;
+    const bOrder = TYPES[b.type] ? TYPES[b.type].order : 999;
+    return aOrder - bOrder;
+  });
+
+  return byTypeArray;
 }
 
 module.exports = groupByType;
@@ -6919,25 +6934,28 @@ module.exports = parseCommitMessage;
 /***/ ((module) => {
 
 const TYPES = {
-  feat: "New Features",
-  fix: "Bugfixes",
-  other: "Other Changes",
-  chore: "Chores",
-  build: "Build System",
-  perf: "Performance Improvements",
-  style: "Code Style Changes",
-  refactor: "Refactors",
-  doc: "Documentation Changes",
+  feat: { label: "New Features", order: 0 },
+  fix: { label: "Bugfixes", order: 1 },
+  perf: { label: "Performance Improvements", order: 2 },
+  build: { label: "Build System", order: 3 },
+  refactor: { label: "Refactors", order: 4 },
+  doc: { label: "Documentation Changes", order: 5 },
+  style: { label: "Code Style Changes", order: 6 },
+  chore: { label: "Chores", order: 7 },
+  other: { label: "Other Changes", order: 8 },
 };
 
 function translateType(type) {
   if (TYPES[type]) {
-    return TYPES[type];
+    return TYPES[type].label;
   }
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
-module.exports = translateType;
+module.exports = {
+  TYPES,
+  translateType,
+};
 
 
 /***/ }),
@@ -7086,34 +7104,6 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
