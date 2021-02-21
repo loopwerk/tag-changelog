@@ -1,3 +1,12 @@
+# [object Object] - 2021-02-21
+
+## New Features
+- Consistent ordering of the changelog (first new features, then bug fixes, etc)
+
+## Tests
+- Added unit tests for all the helper functions
+
+
 # 0.0.9 - 2021-02-19
 
 ## New Features
