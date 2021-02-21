@@ -10,7 +10,7 @@ name: Create Release
 on:
   push:
     tags:
-      - '*'
+      - v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   create-release:
@@ -22,7 +22,7 @@ jobs:
 
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/conventional-changelog-action@main
+        uses: loopwerk/conventional-changelog-action@latest
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude: other,doc,chore

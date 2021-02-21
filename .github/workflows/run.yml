@@ -3,14 +3,14 @@ name: Create Release
 on:
   push:
     tags:
-      - '*'
+      - v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   create-changelog:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Locally
+      - name: Checkout locally
         uses: actions/checkout@v2
         if: ${{ env.ACT }}
         with:
@@ -18,6 +18,9 @@ jobs:
       - name: Checkout GitHub
         uses: actions/checkout@v2
         if: ${{ !env.ACT }}
+
+      - name: Create latest tag
+        uses: EndBug/latest-tag@v1
 
       - name: Create changelog
         id: changelog
