@@ -10,7 +10,7 @@ name: Create Release
 on:
   push:
     tags:
-      - v[0-9]+.[0-9]+.[0-9]+
+      - '*'
 
 jobs:
   create-release:
