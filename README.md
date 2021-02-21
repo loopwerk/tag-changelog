@@ -59,7 +59,7 @@ jobs:
 
 ## Inputs
 * `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
-* `exclude`: A comma separated list of commits types you want to exclude from the changelog. Optional.
+* `exclude`: A comma separated list of commits types you want to exclude from the changelog. Optional (defaults to nothing).
 
 ## Outputs
 * `changelog`: Generated changelog for the latest tag.
