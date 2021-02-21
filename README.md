@@ -1,7 +1,7 @@
 # tag-changelog
 A GitHub Action triggered by a new tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links.
 
-This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc. A full example doing all these things is given below.
+This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc.
 
 ## Example workflow
 ```
@@ -35,26 +35,6 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: ${{ steps.changelog.outputs.changes }}
-
-      - name: Read CHANGELOG.md
-        id: readfile
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: ./CHANGELOG.md
-
-      - name: Write to CHANGELOG.md
-        uses: DamianReeves/write-file-action@master
-        with:
-          path: ./CHANGELOG.md
-          contents: ${{ steps.changelog.outputs.changelog }}${{ steps.readfile.outputs.content }}
-          write-mode: overwrite
-
-      - name: Commit and push CHANGELOG.md
-        uses: EndBug/add-and-commit@v7
-        with:
-          add: CHANGELOG.md
-          message: "chore: Update CHANGELOG.md"
-          branch: main
 ```
 
 ## Inputs
@@ -63,8 +43,8 @@ jobs:
 * `config_file`: Location of the config JSON file. Optional.
 
 ## Outputs
-* `changelog`: Generated changelog for the latest tag.
-* `changes`: Generated changelog for the latest tag, without the version/date header.
+* `changelog`: Generated changelog for the latest tag, including the version/date header (suitable for prepending to a CHANGELOG.md file).
+* `changes`: Generated changelog for the latest tag, without the version/date header (suitable for GitHub Releases).
 
 ## Custom config
 ```
