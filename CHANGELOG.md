@@ -1,4 +1,4 @@
-# [object Object] - 2021-02-21
+# 0.10.0 - 2021-02-21
 
 ## New Features
 - Consistent ordering of the changelog (first new features, then bug fixes, etc)

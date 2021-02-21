@@ -6887,7 +6887,7 @@ async function run() {
 
   const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(tags[0], commitObjects, excludeTypes);
+  const log = generateChangelog(tags[0].name, commitObjects, excludeTypes);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);
