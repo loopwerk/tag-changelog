@@ -6871,10 +6871,23 @@ async function run() {
     head: tags[0].commit.sha,
   });
 
+  const fetchUserFunc = async function (pullNumber) {
+    const pr = await octokit.pulls.get({
+      owner,
+      repo,
+      pull_number: pullNumber,
+    });
+
+    return {
+      username: pr.data.user.login,
+      userUrl: pr.data.user.html_url,
+    };
+  };
+
   // Parse every commit, getting the type, turning PR numbers into links, etc
   const commitObjects = result.data.commits
     .map((commit) => {
-      return parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`);
+      return parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
     })
     .filter((m) => m !== false);
 
@@ -6904,9 +6917,9 @@ run();
 
 const { parser, toConventionalChangelogFormat } = __nccwpck_require__(4523);
 
-const PR_REGEX = /#([1-9]\d*)/g;
+const PR_REGEX = /#([1-9]\d*)/;
 
-function parseCommitMessage(message, repoUrl) {
+async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
   let cAst;
 
   try {
@@ -6920,7 +6933,12 @@ function parseCommitMessage(message, repoUrl) {
     };
   }
 
-  cAst.subject = cAst.subject.replace(PR_REGEX, (match, pull) => `[${match}](${repoUrl}/pull/${pull})`);
+  const found = cAst.subject.match(PR_REGEX);
+  if (found) {
+    const pullNumber = found[1];
+    const { username, userUrl } = await fetchUserFunc(pullNumber);
+    cAst.subject = cAst.subject.replace(PR_REGEX, (match, pull) => `[${match}](${repoUrl}/pull/${pull}) ([${username}](${userUrl}))`);
+  }
 
   return cAst;
 }

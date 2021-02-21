@@ -1,8 +1,8 @@
 const { parser, toConventionalChangelogFormat } = require("@conventional-commits/parser");
 
-const PR_REGEX = /#([1-9]\d*)/g;
+const PR_REGEX = /#([1-9]\d*)/;
 
-function parseCommitMessage(message, repoUrl) {
+async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
   let cAst;
 
   try {
@@ -16,7 +16,12 @@ function parseCommitMessage(message, repoUrl) {
     };
   }
 
-  cAst.subject = cAst.subject.replace(PR_REGEX, (match, pull) => `[${match}](${repoUrl}/pull/${pull})`);
+  const found = cAst.subject.match(PR_REGEX);
+  if (found) {
+    const pullNumber = found[1];
+    const { username, userUrl } = await fetchUserFunc(pullNumber);
+    cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+  }
 
   return cAst;
 }

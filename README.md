@@ -70,8 +70,8 @@ This action is very simple, and not very configurable yet.
 
 - It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
 - The mapping from raw type (like `feat`) to changelog header (like `New Features`) would also be good to have configurable. 
-- Mentioning the author of a PR within the changelog would be good.
 - Display breaking changes notes.
+- Display type scope.
 
 ## Thanks
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.

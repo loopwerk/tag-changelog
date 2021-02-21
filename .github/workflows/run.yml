@@ -23,9 +23,11 @@ jobs:
         uses: EndBug/latest-tag@v1
         if: ${{ !env.ACT }}
 
-      - name: Create major and minor tags
-        uses: vweevers/additional-tags-action@v1
+      - name: Create major tag
+        uses: nowactions/update-majorver@v1
         if: ${{ !env.ACT }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create changelog
         id: changelog

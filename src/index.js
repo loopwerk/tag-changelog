@@ -31,10 +31,23 @@ async function run() {
     head: tags[0].commit.sha,
   });
 
+  const fetchUserFunc = async function (pullNumber) {
+    const pr = await octokit.pulls.get({
+      owner,
+      repo,
+      pull_number: pullNumber,
+    });
+
+    return {
+      username: pr.data.user.login,
+      userUrl: pr.data.user.html_url,
+    };
+  };
+
   // Parse every commit, getting the type, turning PR numbers into links, etc
   const commitObjects = result.data.commits
-    .map((commit) => {
-      return parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`);
+    .map(async (commit) => {
+      return await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
     })
     .filter((m) => m !== false);
 

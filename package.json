@@ -4,7 +4,7 @@
   "description": "Automatically generate a changelog since the last tag, using the conventional commit format",
   "main": "dist/index.js",
   "scripts": {
-    "package": "npm run lint && ncc build src/index.js -o dist",
+    "package": "ncc build src/index.js -o dist",
     "act": "npm run package && act",
     "lint": "eslint src --fix",
     "test": "mocha 'test/*.spec.js'"
