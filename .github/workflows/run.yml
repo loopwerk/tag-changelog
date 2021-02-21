@@ -24,7 +24,7 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          exclude: chore,doc
+          exclude: other,doc,chore
 
       - name: Create release
         uses: actions/create-release@latest
