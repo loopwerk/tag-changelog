@@ -1,5 +1,5 @@
 const groupByType = require("./groupByType");
-const { translateType } = require("./translateType");
+const translateType = require("./translateType");
 
 function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig) {
   const commitsByType = groupByType(commitObjects, typeConfig);

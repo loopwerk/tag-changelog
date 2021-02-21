@@ -59,17 +59,48 @@ jobs:
 
 ## Inputs
 * `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
-* `exclude`: A comma separated list of commits types you want to exclude from the changelog. Optional (defaults to nothing).
+* `exclude`: A comma separated list of commits types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing).
+* `config_file`: Location of the config JSON file. Optional.
 
 ## Outputs
 * `changelog`: Generated changelog for the latest tag.
 * `changes`: Generated changelog for the latest tag, without the version/date header.
 
-## Roadmap
-This action is very simple, and not very configurable yet. 
+## Custom config
+```
+- name: Create changelog text
+  uses: loopwerk/conventional-changelog-action@latest
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    config_file: .github/tag-changelog.json
+```
 
+The config file can be used to map commit types to changelog labels.
+
+### Example config file:
+
+```
+{
+  "types": [
+    { "types": ["feat", "feature"], "label": "New Features" },
+    { "types": ["fix", "bugfix"], "label": "Bugfixes" },
+    { "types": ["improvements", "enhancement"], "label": "Improvements" },
+    { "types": ["perf"], "label": "Performance Improvements" },
+    { "types": ["build", "ci"], "label": "Build System" },
+    { "types": ["refactor"], "label": "Refactors" },
+    { "types": ["doc", "docs"], "label": "Documentation Changes" },
+    { "types": ["test", "tests"], "label": "Tests" },
+    { "types": ["style"], "label": "Code Style Changes" },
+    { "types": ["chore"], "label": "Chores" },
+    { "types": ["other"], "label": "Other Changes" }
+  ]
+}
+```
+
+The order in which the types appear also determines the order of the generated sections in the changelog.
+
+## Roadmap
 - It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
-- The mapping from raw type (like `feat`) to changelog header (like `New Features`) would also be good to have configurable. 
 - Display breaking changes notes.
 - Display type scope.
 

@@ -1,17 +1,29 @@
+const fs = require("fs");
 const { context, getOctokit } = require("@actions/github");
 const { info, getInput, setOutput, setFailed } = require("@actions/core");
 const compareVersions = require("compare-versions");
 
 const parseCommitMessage = require("./parseCommitMessage");
 const generateChangelog = require("./generateChangelog");
-const { DEFAULT_TYPES } = require("./translateType");
+const DEFAULT_CONFIG = require("./defaultConfig");
 
 const {
   repo: { owner, repo },
 } = context;
 
+function getConfig(path) {
+  if (path) {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    return JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+  }
+  return DEFAULT_CONFIG;
+}
+
 async function run() {
-  const token = getInput("token");
+  const token = getInput("token", { required: true });
+  const excludeString = getInput("exclude", { required: false }) || "";
+  const configFile = getInput("config_file", { required: false });
+  const config = getConfig(configFile);
   const octokit = getOctokit(token);
 
   // Find the two most recent tags
@@ -70,9 +82,8 @@ async function run() {
     return;
   }
 
-  const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, DEFAULT_TYPES);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config.types);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);

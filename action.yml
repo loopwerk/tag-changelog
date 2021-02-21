@@ -9,7 +9,10 @@ inputs:
     description: Github repository token
     required: true
   exclude:
-    description: Which commit types to exclude, comma separated string
+    description: 'Which commit types to exclude from the changelog, comma separated string (example: "other,chore")'
+    required: false
+  config_file:
+    description: Location of the config JSON file
     required: false
 outputs:
   changelog:

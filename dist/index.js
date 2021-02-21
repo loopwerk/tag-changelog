@@ -6877,11 +6877,35 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 9563:
+/***/ ((module) => {
+
+const DEFAULT_CONFIG = {
+  types: [
+    { types: ["feat", "feature"], label: "New Features" },
+    { types: ["fix", "bugfix"], label: "Bugfixes" },
+    { types: ["improvements", "enhancement"], label: "Improvements" },
+    { types: ["perf"], label: "Performance Improvements" },
+    { types: ["build", "ci"], label: "Build System" },
+    { types: ["refactor"], label: "Refactors" },
+    { types: ["doc", "docs"], label: "Documentation Changes" },
+    { types: ["test", "tests"], label: "Tests" },
+    { types: ["style"], label: "Code Style Changes" },
+    { types: ["chore"], label: "Chores" },
+    { types: ["other"], label: "Other Changes" },
+  ],
+};
+
+module.exports = DEFAULT_CONFIG;
+
+
+/***/ }),
+
 /***/ 473:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const groupByType = __nccwpck_require__(2243);
-const { translateType } = __nccwpck_require__(2820);
+const translateType = __nccwpck_require__(2820);
 
 function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig) {
   const commitsByType = groupByType(commitObjects, typeConfig);
@@ -6958,20 +6982,32 @@ module.exports = groupByType;
 /***/ 4351:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
+const fs = __nccwpck_require__(5747);
 const { context, getOctokit } = __nccwpck_require__(5438);
 const { info, getInput, setOutput, setFailed } = __nccwpck_require__(2186);
 const compareVersions = __nccwpck_require__(9296);
 
 const parseCommitMessage = __nccwpck_require__(5646);
 const generateChangelog = __nccwpck_require__(473);
-const { DEFAULT_TYPES } = __nccwpck_require__(2820);
+const DEFAULT_CONFIG = __nccwpck_require__(9563);
 
 const {
   repo: { owner, repo },
 } = context;
 
+function getConfig(path) {
+  if (path) {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    return JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+  }
+  return DEFAULT_CONFIG;
+}
+
 async function run() {
-  const token = getInput("token");
+  const token = getInput("token", { required: true });
+  const excludeString = getInput("exclude", { required: false }) || "";
+  const configFile = getInput("config_file", { required: false });
+  const config = getConfig(configFile);
   const octokit = getOctokit(token);
 
   // Find the two most recent tags
@@ -7030,9 +7066,8 @@ async function run() {
     return;
   }
 
-  const excludeString = getInput("exclude") || "";
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, DEFAULT_TYPES);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config.types);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);
@@ -7083,20 +7118,6 @@ module.exports = parseCommitMessage;
 /***/ 2820:
 /***/ ((module) => {
 
-const DEFAULT_TYPES = [
-  { types: ["feat", "feature"], label: "New Features" },
-  { types: ["fix", "bugfix"], label: "Bugfixes" },
-  { types: ["improvements", "enhancement"], label: "Improvements" },
-  { types: ["perf"], label: "Performance Improvements" },
-  { types: ["build", "ci"], label: "Build System" },
-  { types: ["refactor"], label: "Refactors" },
-  { types: ["doc", "docs"], label: "Documentation Changes" },
-  { types: ["test", "tests"], label: "Tests" },
-  { types: ["style"], label: "Code Style Changes" },
-  { types: ["chore"], label: "Chores" },
-  { types: ["other"], label: "Other Changes" },
-];
-
 function translateType(type, typeConfig) {
   const foundType = typeConfig.find((t) => t.types.includes(type));
   if (foundType) {
@@ -7105,10 +7126,7 @@ function translateType(type, typeConfig) {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
-module.exports = {
-  DEFAULT_TYPES,
-  translateType,
-};
+module.exports = translateType;
 
 
 /***/ }),

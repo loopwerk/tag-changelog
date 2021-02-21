@@ -2,7 +2,7 @@
 
 const assert = require("assert");
 const generateChangelog = require("../src/generateChangelog");
-const { DEFAULT_TYPES } = require("../src/translateType");
+const DEFAULT_CONFIG = require("../src/defaultConfig");
 
 describe("generateChangelog", () => {
   it("should create a changelog", () => {
@@ -42,7 +42,7 @@ describe("generateChangelog", () => {
 
 `;
 
-    const result = generateChangelog("0.0.1", commitObjects, ["other"], DEFAULT_TYPES);
+    const result = generateChangelog("0.0.1", commitObjects, ["other"], DEFAULT_CONFIG.types);
     assert.strictEqual(result.changes, expectedChanges);
     assert.strictEqual(result.changelog, expectedChangelog);
   });
