@@ -29,7 +29,7 @@ jobs:
         uses: loopwerk/conventional-changelog-action@latest
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          exclude: other,doc,chore
+          exclude_types: other,doc,chore
 
       - name: Create release
         uses: actions/create-release@latest
@@ -43,7 +43,7 @@ jobs:
 
 ## Inputs
 * `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
-* `exclude`: A comma separated list of commits types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing).
+* `exclude_types`: A comma separated list of commit types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing). Can also be configured in the config file.
 * `config_file`: Location of the config file. Optional.
 
 ## Outputs
@@ -78,6 +78,8 @@ module.exports = {
     { types: ["chore"], label: "🧹 Chores" },
     { types: ["other"], label: "Other Changes" },
   ],
+
+  excludeTypes: ["other"],
 
   renderTypeSection: function (label, commits) {
     let text = `\n## ${label}\n`;

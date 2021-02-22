@@ -42,7 +42,10 @@ describe("generateChangelog", () => {
 
 `;
 
-    const result = generateChangelog("0.0.1", commitObjects, ["other"], DEFAULT_CONFIG);
+    const config = DEFAULT_CONFIG;
+    config.excludeTypes = ["other"];
+
+    const result = generateChangelog("0.0.1", commitObjects, config);
     assert.strictEqual(result.changes, expectedChanges);
     assert.strictEqual(result.changelog, expectedChangelog);
   });

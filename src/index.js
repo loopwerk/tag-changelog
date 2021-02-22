@@ -29,10 +29,15 @@ function getConfig(path) {
 
 async function run() {
   const token = getInput("token", { required: true });
-  const excludeString = getInput("exclude", { required: false }) || "";
+  const octokit = getOctokit(token);
+
   const configFile = getInput("config_file", { required: false });
   const config = getConfig(configFile);
-  const octokit = getOctokit(token);
+  const excludeTypesString = getInput("exclude", { required: false }) || "";
+
+  if (excludeTypesString) {
+    config.excludeTypes = excludeTypesString.split(",");
+  }
 
   // Find the two most recent tags
   const { data: tags } = await octokit.repos.listTags({
@@ -90,8 +95,7 @@ async function run() {
     return;
   }
 
-  const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, config);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);

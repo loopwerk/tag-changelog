@@ -13,6 +13,8 @@ const DEFAULT_CONFIG = {
     { types: ["other"], label: "Other Changes" },
   ],
 
+  excludeTypes: [],
+
   renderTypeSection: function (label, commits) {
     let text = `\n## ${label}\n`;
 

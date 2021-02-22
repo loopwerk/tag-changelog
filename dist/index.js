@@ -6895,6 +6895,8 @@ const DEFAULT_CONFIG = {
     { types: ["other"], label: "Other Changes" },
   ],
 
+  excludeTypes: [],
+
   renderTypeSection: function (label, commits) {
     let text = `\n## ${label}\n`;
 
@@ -6922,13 +6924,13 @@ module.exports = DEFAULT_CONFIG;
 const groupByType = __nccwpck_require__(2243);
 const translateType = __nccwpck_require__(2820);
 
-function generateChangelog(releaseName, commitObjects, excludeTypes, config) {
+function generateChangelog(releaseName, commitObjects, config) {
   const commitsByType = groupByType(commitObjects, config.types);
   let changes = "";
 
   commitsByType
     .filter((obj) => {
-      return !excludeTypes.includes(obj.type);
+      return !config.excludeTypes.includes(obj.type);
     })
     .forEach((obj) => {
       const niceType = translateType(obj.type, config.types);
@@ -7023,10 +7025,15 @@ function getConfig(path) {
 
 async function run() {
   const token = getInput("token", { required: true });
-  const excludeString = getInput("exclude", { required: false }) || "";
+  const octokit = getOctokit(token);
+
   const configFile = getInput("config_file", { required: false });
   const config = getConfig(configFile);
-  const octokit = getOctokit(token);
+  const excludeTypesString = getInput("exclude", { required: false }) || "";
+
+  if (excludeTypesString) {
+    config.excludeTypes = excludeTypesString.split(",");
+  }
 
   // Find the two most recent tags
   const { data: tags } = await octokit.repos.listTags({
@@ -7084,8 +7091,7 @@ async function run() {
     return;
   }
 
-  const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, config);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);
