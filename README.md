@@ -117,10 +117,10 @@ The order in which the `types` appear also determines the order of the generated
 > 
 > ## BREAKING CHANGES
 > - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): commit types to exclude can now also be configured via the config file
+>
 > The `exclude` input parameter has been renamed to `exclude_types`.
 
 ## Roadmap
-- Display type scope
 - Handle the very first tag - currently this Action only works when at least two tags are found
 
 ## Thanks

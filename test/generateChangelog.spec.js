@@ -73,10 +73,32 @@ describe("generateChangelog", () => {
 
 ## BREAKING CHANGES
 - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Feature
+
 This is another breaking change!
 
 - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Fix
+
 This is a breaking change!`;
+
+    const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
+    assert.strictEqual(result.changes, expectedChanges);
+  });
+
+  it("should create a changelog with scopes", () => {
+    const commitObjects = [
+      { subject: "Subject 1", type: "fix", notes: [], scope: "scope" },
+      { subject: "Subject 2", type: "feat", notes: [], scope: "scope" },
+      { subject: "Subject 3", type: "feat", notes: [] },
+      { subject: "Subject 4", type: "fix", notes: [] },
+    ];
+
+    const expectedChanges = `## New Features
+- **scope:** Subject 2
+- Subject 3
+
+## Bugfixes
+- **scope:** Subject 1
+- Subject 4`;
 
     const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
     assert.strictEqual(result.changes, expectedChanges);

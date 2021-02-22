@@ -19,7 +19,8 @@ const DEFAULT_CONFIG = {
     let text = `\n## ${label}\n`;
 
     commits.forEach((commit) => {
-      text += `- ${commit.subject}\n`;
+      const scope = commit.scope ? `**${commit.scope}:** ` : "";
+      text += `- ${scope}${commit.subject}\n`;
     });
 
     return text;
@@ -29,7 +30,7 @@ const DEFAULT_CONFIG = {
     let text = `\n## BREAKING CHANGES\n`;
 
     notes.forEach((note) => {
-      text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n`;
+      text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
       text += `${note.text}\n\n`;
     });
 

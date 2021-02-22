@@ -67,4 +67,20 @@ describe("parseCommitMessage", () => {
     assert.strictEqual(result.subject, "This is a commit [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]");
     assert.strictEqual(result.type, "other");
   });
+
+  it("should parse a scope", async () => {
+    const result = await parseCommitMessage("fix(scope): This is a fix");
+
+    assert.strictEqual(result.subject, "This is a fix");
+    assert.strictEqual(result.scope, "scope");
+    assert.strictEqual(result.type, "fix");
+  });
+
+  it("should not parse a malformed scope", async () => {
+    const result = await parseCommitMessage("fix (scope): This is a fix");
+
+    assert.strictEqual(result.subject, "fix (scope): This is a fix");
+    assert.strictEqual(result.scope, undefined);
+    assert.strictEqual(result.type, "other");
+  });
 });
