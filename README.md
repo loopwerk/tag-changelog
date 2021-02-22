@@ -8,7 +8,7 @@ A GitHub Action triggered by a new tag getting pushed. It then fetches all the c
 This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc.
 
 ## Example workflow
-```
+``` yml
 name: Create Release
 
 on:
@@ -44,49 +44,64 @@ jobs:
 ## Inputs
 * `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
 * `exclude`: A comma separated list of commits types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing).
-* `config_file`: Location of the config JSON file. Optional.
+* `config_file`: Location of the config file. Optional.
 
 ## Outputs
 * `changelog`: Generated changelog for the latest tag, including the version/date header (suitable for prepending to a CHANGELOG.md file).
 * `changes`: Generated changelog for the latest tag, without the version/date header (suitable for GitHub Releases).
 
 ## Custom config
-```
+``` yml
 - name: Create changelog text
   uses: loopwerk/conventional-changelog-action@latest
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
-    config_file: .github/tag-changelog.json
+    config_file: .github/tag-changelog-config.js
 ```
 
-The config file can be used to map commit types to changelog labels.
+The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the default config will be used for whatever is not overriden.
 
 ### Example config file:
 
-```
-{
-  "types": [
-    { "types": ["feat", "feature"], "label": "New Features" },
-    { "types": ["fix", "bugfix"], "label": "Bugfixes" },
-    { "types": ["improvements", "enhancement"], "label": "Improvements" },
-    { "types": ["perf"], "label": "Performance Improvements" },
-    { "types": ["build", "ci"], "label": "Build System" },
-    { "types": ["refactor"], "label": "Refactors" },
-    { "types": ["doc", "docs"], "label": "Documentation Changes" },
-    { "types": ["test", "tests"], "label": "Tests" },
-    { "types": ["style"], "label": "Code Style Changes" },
-    { "types": ["chore"], "label": "Chores" },
-    { "types": ["other"], "label": "Other Changes" }
-  ]
-}
+``` javascript
+module.exports = {
+  types: [
+    { types: ["feat", "feature"], label: "🎉 New Features" },
+    { types: ["fix", "bugfix"], label: "🐛 Bugfixes" },
+    { types: ["improvements", "enhancement"], label: "🔨 Improvements" },
+    { types: ["perf"], label: "🏎️ Performance Improvements" },
+    { types: ["build", "ci"], label: "🏗️ Build System" },
+    { types: ["refactor"], label: "🪚 Refactors" },
+    { types: ["doc", "docs"], label: "📚 Documentation Changes" },
+    { types: ["test", "tests"], label: "🔍 Tests" },
+    { types: ["style"], label: "💅 Code Style Changes" },
+    { types: ["chore"], label: "🧹 Chores" },
+    { types: ["other"], label: "Other Changes" },
+  ],
+
+  renderTypeSection: function (label, commits) {
+    let text = `\n## ${label}\n`;
+
+    commits.forEach((commit) => {
+      text += `- ${commit.subject}\n`;
+    });
+
+    return text;
+  },
+
+  renderChangelog: function (release, changes) {
+    const now = new Date();
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+  },
+};
 ```
 
-The order in which the types appear also determines the order of the generated sections in the changelog.
+The order in which the `types` appear also determines the order of the generated sections in the changelog.
 
 ## Roadmap
-- It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
-- Display breaking changes notes.
-- Display type scope.
+- Display breaking changes notes
+- Display type scope
+- Handle the very first tag - currently this Action only works when at least two tags are found
 
 ## Thanks
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.

@@ -12,6 +12,21 @@ const DEFAULT_CONFIG = {
     { types: ["chore"], label: "Chores" },
     { types: ["other"], label: "Other Changes" },
   ],
+
+  renderTypeSection: function (label, commits) {
+    let text = `\n## ${label}\n`;
+
+    commits.forEach((commit) => {
+      text += `- ${commit.subject}\n`;
+    });
+
+    return text;
+  },
+
+  renderChangelog: function (release, changes) {
+    const now = new Date();
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+  },
 };
 
 module.exports = DEFAULT_CONFIG;

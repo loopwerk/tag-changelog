@@ -6894,6 +6894,21 @@ const DEFAULT_CONFIG = {
     { types: ["chore"], label: "Chores" },
     { types: ["other"], label: "Other Changes" },
   ],
+
+  renderTypeSection: function (label, commits) {
+    let text = `\n## ${label}\n`;
+
+    commits.forEach((commit) => {
+      text += `- ${commit.subject}\n`;
+    });
+
+    return text;
+  },
+
+  renderChangelog: function (release, changes) {
+    const now = new Date();
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+  },
 };
 
 module.exports = DEFAULT_CONFIG;
@@ -6907,8 +6922,8 @@ module.exports = DEFAULT_CONFIG;
 const groupByType = __nccwpck_require__(2243);
 const translateType = __nccwpck_require__(2820);
 
-function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig) {
-  const commitsByType = groupByType(commitObjects, typeConfig);
+function generateChangelog(releaseName, commitObjects, excludeTypes, config) {
+  const commitsByType = groupByType(commitObjects, config.types);
   let changes = "";
 
   commitsByType
@@ -6916,16 +6931,11 @@ function generateChangelog(releaseName, commitObjects, excludeTypes, typeConfig)
       return !excludeTypes.includes(obj.type);
     })
     .forEach((obj) => {
-      const niceType = translateType(obj.type, typeConfig);
-      changes += `\n## ${niceType}\n`;
-
-      obj.commits.forEach((commit) => {
-        changes += `- ${commit.subject}\n`;
-      });
+      const niceType = translateType(obj.type, config.types);
+      changes += config.renderTypeSection(niceType, obj.commits);
     });
 
-  const now = new Date();
-  const changelog = `# ${releaseName} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+  const changelog = config.renderChangelog(releaseName, changes);
 
   return {
     changelog: changelog,
@@ -6982,7 +6992,6 @@ module.exports = groupByType;
 /***/ 4351:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const fs = __nccwpck_require__(5747);
 const { context, getOctokit } = __nccwpck_require__(5438);
 const { info, getInput, setOutput, setFailed } = __nccwpck_require__(2186);
 const compareVersions = __nccwpck_require__(9296);
@@ -6997,9 +7006,18 @@ const {
 
 function getConfig(path) {
   if (path) {
-    const workspace = process.env.GITHUB_WORKSPACE;
-    return JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+    let workspace = process.env.GITHUB_WORKSPACE;
+    if (process.env.ACT) {
+      // Otherwise testing this in ACT doesn't work
+      workspace += "/tag-changelog";
+    }
+
+    const userConfig = require(`${workspace}/${path}`);
+
+    // Merge default config with user config
+    return Object.assign({}, DEFAULT_CONFIG, userConfig);
   }
+
   return DEFAULT_CONFIG;
 }
 
@@ -7067,7 +7085,7 @@ async function run() {
   }
 
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config.types);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);
