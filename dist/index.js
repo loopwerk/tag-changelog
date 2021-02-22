@@ -6907,9 +6907,20 @@ const DEFAULT_CONFIG = {
     return text;
   },
 
+  renderNotes: function (notes) {
+    let text = `\n## BREAKING CHANGES\n`;
+
+    notes.forEach((note) => {
+      text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n`;
+      text += `${note.text}\n\n`;
+    });
+
+    return text;
+  },
+
   renderChangelog: function (release, changes) {
     const now = new Date();
-    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n\n` + changes + "\n\n";
   },
 };
 
@@ -6936,6 +6947,29 @@ function generateChangelog(releaseName, commitObjects, config) {
       const niceType = translateType(obj.type, config.types);
       changes += config.renderTypeSection(niceType, obj.commits);
     });
+
+  // Find all the notes of all the commits of all the types
+  const notes = commitsByType
+    .flatMap((obj) => {
+      return obj.commits
+        .map((commit) => {
+          if (commit.notes.length) {
+            return commit.notes.map((note) => {
+              const noteObj = note;
+              noteObj.commit = commit;
+              return noteObj;
+            });
+          }
+        })
+        .filter((o) => o);
+    })
+    .flatMap((o) => o);
+
+  if (notes.length) {
+    changes += config.renderNotes(notes);
+  }
+
+  changes = changes.trim();
 
   const changelog = config.renderChangelog(releaseName, changes);
 
@@ -7059,7 +7093,7 @@ async function run() {
     owner,
     repo,
     base: validSortedTags[1].commit.sha,
-    head: validSortedTags[0].commit.sha,
+    head: "bcb8767bc22bc7d4ab47a4fffd4ef435de581054", //validSortedTags[0].commit.sha,
   });
 
   const fetchUserFunc = async function (pullNumber) {
@@ -7079,7 +7113,11 @@ async function run() {
   const commitObjects = await Promise.all(
     result.data.commits
       .map(async (commit) => {
-        return await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
+        const commitObj = await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
+        commitObj.sha = commit.sha;
+        commitObj.url = commit.html_url;
+        commitObj.author = commit.author;
+        return commitObj;
       })
       .filter((m) => m !== false)
   );

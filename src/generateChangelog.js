@@ -14,6 +14,29 @@ function generateChangelog(releaseName, commitObjects, config) {
       changes += config.renderTypeSection(niceType, obj.commits);
     });
 
+  // Find all the notes of all the commits of all the types
+  const notes = commitsByType
+    .flatMap((obj) => {
+      return obj.commits
+        .map((commit) => {
+          if (commit.notes.length) {
+            return commit.notes.map((note) => {
+              const noteObj = note;
+              noteObj.commit = commit;
+              return noteObj;
+            });
+          }
+        })
+        .filter((o) => o);
+    })
+    .flatMap((o) => o);
+
+  if (notes.length) {
+    changes += config.renderNotes(notes);
+  }
+
+  changes = changes.trim();
+
   const changelog = config.renderChangelog(releaseName, changes);
 
   return {

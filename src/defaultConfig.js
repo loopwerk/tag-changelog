@@ -25,9 +25,20 @@ const DEFAULT_CONFIG = {
     return text;
   },
 
+  renderNotes: function (notes) {
+    let text = `\n## BREAKING CHANGES\n`;
+
+    notes.forEach((note) => {
+      text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n`;
+      text += `${note.text}\n\n`;
+    });
+
+    return text;
+  },
+
   renderChangelog: function (release, changes) {
     const now = new Date();
-    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n\n` + changes + "\n\n";
   },
 };
 

@@ -100,8 +100,26 @@ module.exports = {
 
 The order in which the `types` appear also determines the order of the generated sections in the changelog.
 
+## Example output
+
+> # v0.14.0 - 2021-02-22
+> 
+> ## New Features
+> - merge the default config with the user config so that the user config only has to override values it wants, and use the defaults for the others
+> - the custom config file is now JS instead of JSON, allow the override of the changelog text templates ([#2](https://github.com/loopwerk/tag-changelog/pull/2) by [kevinrenskers](https://github.com/kevinrenskers))
+> - commit types to exclude can now also be configured via the config file
+> 
+> ## Documentation Changes
+> - simplified readme
+> 
+> ## Chores
+> - added project logo
+> 
+> ## BREAKING CHANGES
+> - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): commit types to exclude can now also be configured via the config file
+> The `exclude` input parameter has been renamed to `exclude_types`.
+
 ## Roadmap
-- Display breaking changes notes
 - Display type scope
 - Handle the very first tag - currently this Action only works when at least two tags are found
 
