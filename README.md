@@ -8,7 +8,7 @@ A GitHub Action triggered by a new tag getting pushed. It then fetches all the c
 This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc.
 
 ## Example workflow
-```
+``` yml
 name: Create Release
 
 on:
@@ -44,39 +44,39 @@ jobs:
 ## Inputs
 * `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
 * `exclude`: A comma separated list of commits types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing).
-* `config_file`: Location of the config JSON file. Optional.
+* `config_file`: Location of the config file. Optional.
 
 ## Outputs
 * `changelog`: Generated changelog for the latest tag, including the version/date header (suitable for prepending to a CHANGELOG.md file).
 * `changes`: Generated changelog for the latest tag, without the version/date header (suitable for GitHub Releases).
 
 ## Custom config
-```
+``` yml
 - name: Create changelog text
   uses: loopwerk/conventional-changelog-action@latest
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
-    config_file: .github/tag-changelog.json
+    config_file: .github/tag-changelog-config.js
 ```
 
 The config file can be used to map commit types to changelog labels.
 
 ### Example config file:
 
-```
-{
+``` javascript
+module.exports = {
   "types": [
-    { "types": ["feat", "feature"], "label": "New Features" },
-    { "types": ["fix", "bugfix"], "label": "Bugfixes" },
-    { "types": ["improvements", "enhancement"], "label": "Improvements" },
-    { "types": ["perf"], "label": "Performance Improvements" },
-    { "types": ["build", "ci"], "label": "Build System" },
-    { "types": ["refactor"], "label": "Refactors" },
-    { "types": ["doc", "docs"], "label": "Documentation Changes" },
-    { "types": ["test", "tests"], "label": "Tests" },
-    { "types": ["style"], "label": "Code Style Changes" },
-    { "types": ["chore"], "label": "Chores" },
-    { "types": ["other"], "label": "Other Changes" }
+    { types: ["feat", "feature"], label: "🎉 New Features" },
+    { types: ["fix", "bugfix"], label: "🐛 Bugfixes" },
+    { types: ["improvements", enhancement], "label": "🔨 Improvements" },
+    { types: ["perf"], label: "🏎️ Performance Improvements" },
+    { types: ["build", "ci"], label: "🏗️ Build System" },
+    { types: ["refactor"], label: "🪚 Refactors" },
+    { types: ["doc", "docs"], label: "📚 Documentation Changes" },
+    { types: ["test", "tests"], label: "🔍 Tests" },
+    { types: ["style"], label: "💅 Code Style Changes" },
+    { types: ["chore"], label: "🧹 Chores" },
+    { types: ["other"], label: "Other Changes" },
   ]
 }
 ```

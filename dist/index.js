@@ -6982,7 +6982,6 @@ module.exports = groupByType;
 /***/ 4351:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const fs = __nccwpck_require__(5747);
 const { context, getOctokit } = __nccwpck_require__(5438);
 const { info, getInput, setOutput, setFailed } = __nccwpck_require__(2186);
 const compareVersions = __nccwpck_require__(9296);
@@ -6997,9 +6996,18 @@ const {
 
 function getConfig(path) {
   if (path) {
-    const workspace = process.env.GITHUB_WORKSPACE;
-    return JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+    let workspace = process.env.GITHUB_WORKSPACE;
+    if (process.env.ACT) {
+      // Otherwise testing this in ACT doesn't work
+      workspace += "/tag-changelog";
+    }
+
+    const userConfig = require(`${workspace}/${path}`);
+
+    // Merge default config with user config
+    return Object.assign({}, DEFAULT_CONFIG, userConfig);
   }
+
   return DEFAULT_CONFIG;
 }
 

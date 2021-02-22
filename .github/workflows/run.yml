@@ -35,6 +35,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude: other,doc,chore,build
+          config_file: .github/config.js
 
       - name: Create release
         uses: actions/create-release@latest

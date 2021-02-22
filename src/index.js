@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { context, getOctokit } = require("@actions/github");
 const { info, getInput, setOutput, setFailed } = require("@actions/core");
 const compareVersions = require("compare-versions");
@@ -13,10 +12,18 @@ const {
 
 function getConfig(path) {
   if (path) {
-    const workspace = process.env.GITHUB_WORKSPACE;
-    const userConfig = JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
-    return { DEFAULT_CONFIG, userConfig };
+    let workspace = process.env.GITHUB_WORKSPACE;
+    if (process.env.ACT) {
+      // Otherwise testing this in ACT doesn't work
+      workspace += "/tag-changelog";
+    }
+
+    const userConfig = require(`${workspace}/${path}`);
+
+    // Merge default config with user config
+    return Object.assign({}, DEFAULT_CONFIG, userConfig);
   }
+
   return DEFAULT_CONFIG;
 }
 
