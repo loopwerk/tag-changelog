@@ -91,7 +91,7 @@ async function run() {
   }
 
   const excludeTypes = excludeString.split(",");
-  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config.types);
+  const log = generateChangelog(validSortedTags[0].name, commitObjects, excludeTypes, config);
 
   info(log.changelog);
   setOutput("changelog", log.changelog);

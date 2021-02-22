@@ -59,16 +59,16 @@ jobs:
     config_file: .github/tag-changelog-config.js
 ```
 
-The config file can be used to map commit types to changelog labels.
+The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the default config will be used for whatever is not overriden.
 
 ### Example config file:
 
 ``` javascript
 module.exports = {
-  "types": [
+  types: [
     { types: ["feat", "feature"], label: "🎉 New Features" },
     { types: ["fix", "bugfix"], label: "🐛 Bugfixes" },
-    { types: ["improvements", enhancement], "label": "🔨 Improvements" },
+    { types: ["improvements", "enhancement"], label: "🔨 Improvements" },
     { types: ["perf"], label: "🏎️ Performance Improvements" },
     { types: ["build", "ci"], label: "🏗️ Build System" },
     { types: ["refactor"], label: "🪚 Refactors" },
@@ -77,16 +77,31 @@ module.exports = {
     { types: ["style"], label: "💅 Code Style Changes" },
     { types: ["chore"], label: "🧹 Chores" },
     { types: ["other"], label: "Other Changes" },
-  ]
-}
+  ],
+
+  renderTypeSection: function (label, commits) {
+    let text = `\n## ${label}\n`;
+
+    commits.forEach((commit) => {
+      text += `- ${commit.subject}\n`;
+    });
+
+    return text;
+  },
+
+  renderChangelog: function (release, changes) {
+    const now = new Date();
+    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+  },
+};
 ```
 
-The order in which the types appear also determines the order of the generated sections in the changelog.
+The order in which the `types` appear also determines the order of the generated sections in the changelog.
 
 ## Roadmap
-- It would be nice to be able to supply a changelog message template instead of having a hardcoded template in the action itself. 
-- Display breaking changes notes.
-- Display type scope.
+- Display breaking changes notes
+- Display type scope
+- Handle the very first tag - currently this Action only works when at least two tags are found
 
 ## Thanks
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.
