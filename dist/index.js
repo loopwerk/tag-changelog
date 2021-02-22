@@ -7094,7 +7094,7 @@ async function run() {
     owner,
     repo,
     base: validSortedTags[1].commit.sha,
-    head: "bcb8767bc22bc7d4ab47a4fffd4ef435de581054", //validSortedTags[0].commit.sha,
+    head: validSortedTags[0].commit.sha,
   });
 
   const fetchUserFunc = async function (pullNumber) {
