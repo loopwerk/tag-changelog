@@ -120,6 +120,8 @@ The order in which the `types` appear also determines the order of the generated
 >
 > The `exclude` input parameter has been renamed to `exclude_types`.
 
+You can also check out the [Releases page](https://github.com/loopwerk/tag-changelog/releases) for tag-changelog.
+
 ## Roadmap
 - Handle the very first tag - currently this Action only works when at least two tags are found
 
