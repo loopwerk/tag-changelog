@@ -7058,13 +7058,19 @@ function getConfig(path) {
   return DEFAULT_CONFIG;
 }
 
+const TAG_REGEX = /^v?(\d+).(\d+).(\d+)$/i;
+
+function validateTag(tag) {
+  return TAG_REGEX.test(tag);
+}
+
 async function run() {
   const token = getInput("token", { required: true });
   const octokit = getOctokit(token);
 
   const configFile = getInput("config_file", { required: false });
   const config = getConfig(configFile);
-  const excludeTypesString = getInput("exclude", { required: false }) || "";
+  const excludeTypesString = getInput("exclude_types", { required: false }) || "";
 
   if (excludeTypesString) {
     config.excludeTypes = excludeTypesString.split(",");
@@ -7078,7 +7084,7 @@ async function run() {
   });
 
   const validSortedTags = tags
-    .filter((t) => compareVersions.validate(t.name))
+    .filter((t) => validateTag(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })
