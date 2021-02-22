@@ -3,7 +3,7 @@
 </p>
 
 # tag-changelog
-A GitHub Action triggered by a new tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links.
+A GitHub Action triggered by a new (valid semver) tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links, and mentions the author.
 
 This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc.
 
