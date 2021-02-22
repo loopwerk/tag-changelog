@@ -14,7 +14,8 @@ const {
 function getConfig(path) {
   if (path) {
     const workspace = process.env.GITHUB_WORKSPACE;
-    return JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+    const userConfig = JSON.parse(fs.readFileSync(`${workspace}/${path}`, "utf8"));
+    return { DEFAULT_CONFIG, userConfig };
   }
   return DEFAULT_CONFIG;
 }
