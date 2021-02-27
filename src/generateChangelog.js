@@ -19,7 +19,7 @@ function generateChangelog(releaseName, commitObjects, config) {
     .flatMap((obj) => {
       return obj.commits
         .map((commit) => {
-          if (commit.notes.length) {
+          if (commit.notes && commit.notes.length) {
             return commit.notes.map((note) => {
               const noteObj = note;
               noteObj.commit = commit;
