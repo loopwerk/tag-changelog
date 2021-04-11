@@ -26,7 +26,7 @@ jobs:
 
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/conventional-changelog-action@latest
+        uses: loopwerk/tag-changelog@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude_types: other,doc,chore
@@ -53,7 +53,7 @@ jobs:
 ## Custom config
 ``` yml
 - name: Create changelog text
-  uses: loopwerk/conventional-changelog-action@latest
+  uses: loopwerk/tag-changelog@v1
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     config_file: .github/tag-changelog-config.js
