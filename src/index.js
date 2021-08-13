@@ -27,12 +27,6 @@ function getConfig(path) {
   return DEFAULT_CONFIG;
 }
 
-const TAG_REGEX = /^v?(\d+).(\d+).(\d+)$/i;
-
-function validateTag(tag) {
-  return TAG_REGEX.test(tag);
-}
-
 async function run() {
   const token = getInput("token", { required: true });
   const octokit = getOctokit(token);
@@ -53,7 +47,7 @@ async function run() {
   });
 
   const validSortedTags = tags
-    .filter((t) => validateTag(t.name))
+    .filter((t) => compareVersions.validate(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })
