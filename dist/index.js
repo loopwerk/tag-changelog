@@ -7166,8 +7166,13 @@ async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
   const found = cAst.subject.match(PR_REGEX);
   if (found) {
     const pullNumber = found[1];
-    const { username, userUrl } = await fetchUserFunc(pullNumber);
-    cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+
+    try {
+      const { username, userUrl } = await fetchUserFunc(pullNumber);
+      cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+    } catch (error) {
+      // We found a #123 style hash, but it wasn't a valid PR. Ignore.
+    }
   }
 
   return cAst;
