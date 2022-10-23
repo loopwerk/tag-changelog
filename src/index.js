@@ -1,6 +1,6 @@
 const { context, getOctokit } = require("@actions/github");
 const { info, getInput, setOutput, setFailed } = require("@actions/core");
-const compareVersions = require("compare-versions");
+const { compareVersions } = require("compare-versions");
 
 const parseCommitMessage = require("./parseCommitMessage");
 const generateChangelog = require("./generateChangelog");
