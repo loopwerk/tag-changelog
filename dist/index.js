@@ -11085,7 +11085,7 @@ async function run() {
   }
 
   // Find the two most recent tags
-  const { data: tags } = await octokit.repos.listTags({
+  const { data: tags } = await octokit.rest.repos.listTags({
     owner,
     repo,
     per_page: 10,
@@ -11104,7 +11104,7 @@ async function run() {
   }
 
   // Find the commits between two tags
-  const result = await octokit.repos.compareCommits({
+  const result = await octokit.rest.repos.compareCommits({
     owner,
     repo,
     base: validSortedTags[1].commit.sha,
@@ -11112,7 +11112,7 @@ async function run() {
   });
 
   const fetchUserFunc = async function (pullNumber) {
-    const pr = await octokit.pulls.get({
+    const pr = await octokit.rest.pulls.get({
       owner,
       repo,
       pull_number: pullNumber,
