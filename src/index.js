@@ -1,6 +1,6 @@
 const { context, getOctokit } = require("@actions/github");
 const { info, getInput, setOutput, setFailed } = require("@actions/core");
-const { compareVersions } = require("compare-versions");
+const { compareVersions, validate } = require("compare-versions");
 
 const parseCommitMessage = require("./parseCommitMessage");
 const generateChangelog = require("./generateChangelog");
@@ -47,7 +47,7 @@ async function run() {
   });
 
   const validSortedTags = tags
-    .filter((t) => compareVersions.validate(t.name))
+    .filter((t) => validate(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })

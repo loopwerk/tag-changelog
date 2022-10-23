@@ -11045,7 +11045,7 @@ var __webpack_exports__ = {};
 (() => {
 const { context, getOctokit } = __nccwpck_require__(5438);
 const { info, getInput, setOutput, setFailed } = __nccwpck_require__(2186);
-const { compareVersions } = __nccwpck_require__(4773);
+const { compareVersions, validate } = __nccwpck_require__(4773);
 
 const parseCommitMessage = __nccwpck_require__(5646);
 const generateChangelog = __nccwpck_require__(473);
@@ -11092,7 +11092,7 @@ async function run() {
   });
 
   const validSortedTags = tags
-    .filter((t) => compareVersions.validate(t.name))
+    .filter((t) => validate(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })
