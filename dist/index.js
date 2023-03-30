@@ -11098,7 +11098,22 @@ async function run() {
     })
     .reverse();
 
-  if (validSortedTags.length < 2) {
+  // if there is only one tag, then create a changelog from the first commit
+  let base = null;
+  let head = null;
+  if (validSortedTags.length > 1) {
+    base = validSortedTags[1].commit.sha;
+    head = validSortedTags[0].commit.sha;
+  } else if (validSortedTags.length === 1) {
+    const { data: commits } = await octokit.rest.repos.listCommits({
+      owner,
+      repo,
+      per_page: 1,
+    });
+    const firstCommit = commits[0];
+    base = firstCommit.sha;
+    head = validSortedTags[0].commit.sha;
+  } else {
     setFailed("Couldn't find previous tag");
     return;
   }
@@ -11107,8 +11122,8 @@ async function run() {
   const result = await octokit.rest.repos.compareCommits({
     owner,
     repo,
-    base: validSortedTags[1].commit.sha,
-    head: validSortedTags[0].commit.sha,
+    base: base,
+    head: head,
   });
 
   const fetchUserFunc = async function (pullNumber) {

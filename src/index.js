@@ -52,7 +52,7 @@ async function run() {
       return compareVersions(a.name, b.name);
     })
     .reverse();
-  
+
   // if there is only one tag, then create a changelog from the first commit
   let base = null;
   let head = null;
@@ -78,7 +78,7 @@ async function run() {
     owner,
     repo,
     base: base,
-    head: head
+    head: head,
   });
 
   const fetchUserFunc = async function (pullNumber) {
