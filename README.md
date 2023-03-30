@@ -122,8 +122,5 @@ The order in which the `types` appear also determines the order of the generated
 
 You can also check out the [Releases page](https://github.com/loopwerk/tag-changelog/releases) for tag-changelog.
 
-## Roadmap
-- Handle the very first tag - currently this Action only works when at least two tags are found
-
 ## Thanks
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.
