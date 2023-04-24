@@ -42,8 +42,7 @@ async function run() {
   // Find the two most recent tags
   // Using https://octokit.github.io/rest.js/v19#pagination
   const { data: tags } = await octokit.paginate("GET /repos/{owner}/{repo}/tags",
-    { owner, repo },
-    response => response.data.map(d => d.name)
+    { owner, repo }
   )
 
   const validSortedTags = tags
