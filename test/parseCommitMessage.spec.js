@@ -3,7 +3,7 @@
 const assert = require("assert");
 const parseCommitMessage = require("../src/parseCommitMessage");
 
-const fetchUserFunc = async function (pullNumber) {
+const fetchUserFunc = async function () {
   return {
     username: "kevinrenskers",
     userUrl: "https://github.com/kevinrenskers",
@@ -22,6 +22,7 @@ describe("parseCommitMessage", () => {
     const result = await parseCommitMessage("feat: This is a feature\n\nBody");
 
     assert.strictEqual(result.subject, "This is a feature");
+    assert.strictEqual(result.body, "Body");
     assert.strictEqual(result.type, "feat");
   });
 
