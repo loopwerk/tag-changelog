@@ -10680,12 +10680,17 @@ const DEFAULT_CONFIG = {
 
   excludeTypes: [],
 
-  renderTypeSection: function (label, commits) {
+  includeCommitBody: false,
+
+  renderTypeSection: function (label, commits, includeCommitBody) {
     let text = `\n## ${label}\n`;
 
-    commits.forEach((commit) => {
+    commits.forEach(commit => {
       const scope = commit.scope ? `**${commit.scope}:** ` : "";
       text += `- ${scope}${commit.subject}\n`;
+      if (commit.body && includeCommitBody) {
+        text += `${commit.body}\n`;
+      }
     });
 
     return text;
@@ -10694,7 +10699,7 @@ const DEFAULT_CONFIG = {
   renderNotes: function (notes) {
     let text = `\n## BREAKING CHANGES\n`;
 
-    notes.forEach((note) => {
+    notes.forEach(note => {
       text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
       text += `${note.text}\n\n`;
     });
@@ -10724,30 +10729,30 @@ function generateChangelog(releaseName, commitObjects, config) {
   let changes = "";
 
   commitsByType
-    .filter((obj) => {
+    .filter(obj => {
       return !config.excludeTypes.includes(obj.type);
     })
-    .forEach((obj) => {
+    .forEach(obj => {
       const niceType = translateType(obj.type, config.types);
-      changes += config.renderTypeSection(niceType, obj.commits);
+      changes += config.renderTypeSection(niceType, obj.commits, config.includeCommitBody);
     });
 
   // Find all the notes of all the commits of all the types
   const notes = commitsByType
-    .flatMap((obj) => {
+    .flatMap(obj => {
       return obj.commits
-        .map((commit) => {
+        .map(commit => {
           if (commit.notes && commit.notes.length) {
-            return commit.notes.map((note) => {
+            return commit.notes.map(note => {
               const noteObj = note;
               noteObj.commit = commit;
               return noteObj;
             });
           }
         })
-        .filter((o) => o);
+        .filter(o => o);
     })
-    .flatMap((o) => o);
+    .flatMap(o => o);
 
   if (notes.length) {
     changes += config.renderNotes(notes);
@@ -10775,7 +10780,7 @@ function groupByType(commits, typeConfig) {
   // First, group all the commits by their types.
   // We end up with a dictionary where the key is the type, and the values is an array of commits.
   const byType = {};
-  commits.forEach((commit) => {
+  commits.forEach(commit => {
     if (!byType[commit.type]) {
       byType[commit.type] = [];
     }
@@ -10785,7 +10790,7 @@ function groupByType(commits, typeConfig) {
   // Turn that dictionary into an array of objects,
   // where the key is the type, and the values is an array of commits.
   const byTypeArray = [];
-  Object.keys(byType).forEach((key) => {
+  Object.keys(byType).forEach(key => {
     byTypeArray.push({
       type: key,
       commits: byType[key],
@@ -10794,9 +10799,9 @@ function groupByType(commits, typeConfig) {
 
   // And now we sort that array using the TYPES object.
   byTypeArray.sort((a, b) => {
-    let aOrder = typeConfig.findIndex((t) => t.types.includes(a.type));
+    let aOrder = typeConfig.findIndex(t => t.types.includes(a.type));
     if (aOrder === -1) aOrder = 999;
-    let bOrder = typeConfig.findIndex((t) => t.types.includes(b.type));
+    let bOrder = typeConfig.findIndex(t => t.types.includes(b.type));
     if (bOrder === -1) bOrder = 999;
     return aOrder - bOrder;
   });
@@ -10854,7 +10859,7 @@ module.exports = parseCommitMessage;
 /***/ ((module) => {
 
 function translateType(type, typeConfig) {
-  const foundType = typeConfig.find((t) => t.types.includes(type));
+  const foundType = typeConfig.find(t => t.types.includes(type));
   if (foundType) {
     return foundType.label;
   }
@@ -11089,7 +11094,7 @@ async function run() {
   const tags = await octokit.paginate("GET /repos/{owner}/{repo}/tags", { owner, repo });
 
   const validSortedTags = tags
-    .filter((t) => validate(t.name))
+    .filter(t => validate(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })
@@ -11139,14 +11144,14 @@ async function run() {
   // Parse every commit, getting the type, turning PR numbers into links, etc
   const commitObjects = await Promise.all(
     result.data.commits
-      .map(async (commit) => {
+      .map(async commit => {
         const commitObj = await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
         commitObj.sha = commit.sha;
         commitObj.url = commit.html_url;
         commitObj.author = commit.author;
         return commitObj;
       })
-      .filter((m) => m !== false)
+      .filter(m => m !== false)
   );
 
   // And generate the changelog
