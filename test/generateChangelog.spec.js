@@ -7,12 +7,12 @@ const DEFAULT_CONFIG = require("../src/defaultConfig");
 describe("generateChangelog", () => {
   it("should create a changelog", () => {
     const commitObjects = [
-      { subject: "Subject 1", type: "fix", notes: [] },
-      { subject: "Subject 2", type: "feat", notes: [] },
-      { subject: "Subject 3", type: "feat", notes: [] },
-      { subject: "Subject 4", type: "fix", notes: [] },
-      { subject: "Subject 5", type: "feat", notes: [] },
-      { subject: "Subject 6", type: "other", notes: [] },
+      { subject: "Subject 1", body: "Body 1", type: "fix", notes: [] },
+      { subject: "Subject 2", body: "Body 2", type: "feat", notes: [] },
+      { subject: "Subject 3", body: "Body 3", type: "feat", notes: [] },
+      { subject: "Subject 4", body: "Body 4", type: "fix", notes: [] },
+      { subject: "Subject 5", body: "Body 5", type: "feat", notes: [] },
+      { subject: "Subject 6", body: "Body 6", type: "other", notes: [] },
     ];
 
     const dateString = new Date().toISOString().substr(0, 10);
@@ -41,6 +41,59 @@ describe("generateChangelog", () => {
 
     const config = DEFAULT_CONFIG;
     config.excludeTypes = ["other"];
+
+    const result = generateChangelog("0.0.1", commitObjects, config);
+    assert.strictEqual(result.changes, expectedChanges);
+    assert.strictEqual(result.changelog, expectedChangelog);
+  });
+
+  it("should create a changelog with body text", () => {
+    const commitObjects = [
+      { subject: "Subject 1", body: "Body 1", type: "fix", notes: [] },
+      { subject: "Subject 2", body: "Body 2", type: "feat", notes: [] },
+      { subject: "Subject 3", body: "Body 3", type: "feat", notes: [] },
+      { subject: "Subject 4", body: "Body 4", type: "fix", notes: [] },
+      { subject: "Subject 5", body: "Body 5", type: "feat", notes: [] },
+      { subject: "Subject 6", body: "Body 6", type: "other", notes: [] },
+    ];
+
+    const dateString = new Date().toISOString().substr(0, 10);
+
+    const expectedChanges = `## New Features
+- Subject 2
+Body 2
+- Subject 3
+Body 3
+- Subject 5
+Body 5
+
+## Bugfixes
+- Subject 1
+Body 1
+- Subject 4
+Body 4`;
+
+    const expectedChangelog = `# 0.0.1 - ${dateString}
+
+## New Features
+- Subject 2
+Body 2
+- Subject 3
+Body 3
+- Subject 5
+Body 5
+
+## Bugfixes
+- Subject 1
+Body 1
+- Subject 4
+Body 4
+
+`;
+
+    const config = DEFAULT_CONFIG;
+    config.excludeTypes = ["other"];
+    config.includeCommitBody = true;
 
     const result = generateChangelog("0.0.1", commitObjects, config);
     assert.strictEqual(result.changes, expectedChanges);

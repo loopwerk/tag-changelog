@@ -3,18 +3,20 @@
 </p>
 
 # tag-changelog
+
 A GitHub Action triggered by a new (valid semver) tag getting pushed. It then fetches all the commits since the previous tag and creates a changelog text using the [Conventional Commits](https://www.conventionalcommits.org) format. It will also turn PR numbers into clickable links, and mentions the author.
 
 This action returns the generated changelog text, but doesn't do anything more; you need to for example prepend it to a `CHANGELOG.md` file, create a GitHub Release with this text, etc.
 
 ## Example workflow
-``` yml
+
+```yml
 name: Create Release
 
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   create-release:
@@ -42,16 +44,19 @@ jobs:
 ```
 
 ## Inputs
-* `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
-* `exclude_types`: A comma separated list of commit types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing). Can also be configured in the config file.
-* `config_file`: Location of the config file. Optional.
+
+- `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
+- `exclude_types`: A comma separated list of commit types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing). Can also be configured in the config file.
+- `config_file`: Location of the config file. Optional.
 
 ## Outputs
-* `changelog`: Generated changelog for the latest tag, including the version/date header (suitable for prepending to a CHANGELOG.md file).
-* `changes`: Generated changelog for the latest tag, without the version/date header (suitable for GitHub Releases).
+
+- `changelog`: Generated changelog for the latest tag, including the version/date header (suitable for prepending to a CHANGELOG.md file).
+- `changes`: Generated changelog for the latest tag, without the version/date header (suitable for GitHub Releases).
 
 ## Custom config
-``` yml
+
+```yml
 - name: Create changelog text
   uses: loopwerk/tag-changelog@v1
   with:
@@ -63,7 +68,7 @@ The config file can be used to map commit types to changelog labels, to override
 
 ### Example config file:
 
-``` javascript
+```javascript
 module.exports = {
   types: [
     { types: ["feat", "feature"], label: "🎉 New Features" },
@@ -84,8 +89,11 @@ module.exports = {
   renderTypeSection: function (label, commits) {
     let text = `\n## ${label}\n`;
 
-    commits.forEach((commit) => {
+    commits.forEach(commit => {
       text += `- ${commit.subject}\n`;
+      if (commit.body) {
+        text += `${commit.body}\n`;
+      }
     });
 
     return text;
@@ -103,19 +111,23 @@ The order in which the `types` appear also determines the order of the generated
 ## Example output
 
 > # v0.14.0 - 2021-02-22
-> 
+>
 > ## New Features
+>
 > - merge the default config with the user config so that the user config only has to override values it wants, and use the defaults for the others
 > - the custom config file is now JS instead of JSON, allow the override of the changelog text templates ([#2](https://github.com/loopwerk/tag-changelog/pull/2) by [kevinrenskers](https://github.com/kevinrenskers))
 > - commit types to exclude can now also be configured via the config file
-> 
+>
 > ## Documentation Changes
+>
 > - simplified readme
-> 
+>
 > ## Chores
+>
 > - added project logo
-> 
+>
 > ## BREAKING CHANGES
+>
 > - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): commit types to exclude can now also be configured via the config file
 >
 > The `exclude` input parameter has been renamed to `exclude_types`.
@@ -123,4 +135,5 @@ The order in which the `types` appear also determines the order of the generated
 You can also check out the [Releases page](https://github.com/loopwerk/tag-changelog/releases) for tag-changelog.
 
 ## Thanks
+
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.

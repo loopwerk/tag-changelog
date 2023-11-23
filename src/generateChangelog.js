@@ -11,7 +11,7 @@ function generateChangelog(releaseName, commitObjects, config) {
     })
     .forEach(obj => {
       const niceType = translateType(obj.type, config.types);
-      changes += config.renderTypeSection(niceType, obj.commits);
+      changes += config.renderTypeSection(niceType, obj.commits, config.includeCommitBody);
     });
 
   // Find all the notes of all the commits of all the types
