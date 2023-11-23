@@ -18,7 +18,7 @@ const DEFAULT_CONFIG = {
   renderTypeSection: function (label, commits) {
     let text = `\n## ${label}\n`;
 
-    commits.forEach((commit) => {
+    commits.forEach(commit => {
       const scope = commit.scope ? `**${commit.scope}:** ` : "";
       text += `- ${scope}${commit.subject}\n`;
     });
@@ -29,7 +29,7 @@ const DEFAULT_CONFIG = {
   renderNotes: function (notes) {
     let text = `\n## BREAKING CHANGES\n`;
 
-    notes.forEach((note) => {
+    notes.forEach(note => {
       text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
       text += `${note.text}\n\n`;
     });

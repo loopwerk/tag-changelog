@@ -29,7 +29,10 @@ describe("parseCommitMessage", () => {
   it("should parse basic feat with a PR number", async () => {
     const result = await parseCommitMessage("feat: This is a feature [#1]", "https://github.com/loopwerk/tag-changelog", fetchUserFunc);
 
-    assert.strictEqual(result.subject, "This is a feature [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]");
+    assert.strictEqual(
+      result.subject,
+      "This is a feature [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]"
+    );
     assert.strictEqual(result.type, "feat");
   });
 
@@ -65,7 +68,10 @@ describe("parseCommitMessage", () => {
   it("should parse a missing type with a PR number", async () => {
     const result = await parseCommitMessage("This is a commit [#1]", "https://github.com/loopwerk/tag-changelog", fetchUserFunc);
 
-    assert.strictEqual(result.subject, "This is a commit [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]");
+    assert.strictEqual(
+      result.subject,
+      "This is a commit [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]"
+    );
     assert.strictEqual(result.type, "other");
   });
 

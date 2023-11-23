@@ -44,7 +44,7 @@ async function run() {
   const tags = await octokit.paginate("GET /repos/{owner}/{repo}/tags", { owner, repo });
 
   const validSortedTags = tags
-    .filter((t) => validate(t.name))
+    .filter(t => validate(t.name))
     .sort((a, b) => {
       return compareVersions(a.name, b.name);
     })
@@ -94,14 +94,14 @@ async function run() {
   // Parse every commit, getting the type, turning PR numbers into links, etc
   const commitObjects = await Promise.all(
     result.data.commits
-      .map(async (commit) => {
+      .map(async commit => {
         const commitObj = await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
         commitObj.sha = commit.sha;
         commitObj.url = commit.html_url;
         commitObj.author = commit.author;
         return commitObj;
       })
-      .filter((m) => m !== false)
+      .filter(m => m !== false)
   );
 
   // And generate the changelog

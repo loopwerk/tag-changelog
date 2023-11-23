@@ -12,7 +12,7 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    "prettier/prettier": ["error", { printWidth: 200 }],
+    "no-var": "error",
     "prefer-const": "error",
     eqeqeq: "error",
     "no-useless-return": "error",

@@ -6,30 +6,30 @@ function generateChangelog(releaseName, commitObjects, config) {
   let changes = "";
 
   commitsByType
-    .filter((obj) => {
+    .filter(obj => {
       return !config.excludeTypes.includes(obj.type);
     })
-    .forEach((obj) => {
+    .forEach(obj => {
       const niceType = translateType(obj.type, config.types);
       changes += config.renderTypeSection(niceType, obj.commits);
     });
 
   // Find all the notes of all the commits of all the types
   const notes = commitsByType
-    .flatMap((obj) => {
+    .flatMap(obj => {
       return obj.commits
-        .map((commit) => {
+        .map(commit => {
           if (commit.notes && commit.notes.length) {
-            return commit.notes.map((note) => {
+            return commit.notes.map(note => {
               const noteObj = note;
               noteObj.commit = commit;
               return noteObj;
             });
           }
         })
-        .filter((o) => o);
+        .filter(o => o);
     })
-    .flatMap((o) => o);
+    .flatMap(o => o);
 
   if (notes.length) {
     changes += config.renderNotes(notes);

@@ -1,5 +1,5 @@
 function translateType(type, typeConfig) {
-  const foundType = typeConfig.find((t) => t.types.includes(type));
+  const foundType = typeConfig.find(t => t.types.includes(type));
   if (foundType) {
     return foundType.label;
   }
