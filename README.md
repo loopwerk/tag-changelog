@@ -64,7 +64,7 @@ jobs:
     config_file: .github/tag-changelog-config.js
 ```
 
-The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the default config will be used for whatever is not overriden.
+The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the [default config](https://github.com/loopwerk/tag-changelog/blob/main/src/defaultConfig.js) will be used for whatever is not overriden.
 
 ### Example config file:
 
