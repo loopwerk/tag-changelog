@@ -20,5 +20,5 @@ outputs:
   changes:
     description: Generated changelog for the latest tag, without the version/date header
 runs:
-  using: node16
+  using: node20
   main: "dist/index.js"
