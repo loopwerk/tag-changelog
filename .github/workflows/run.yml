@@ -11,12 +11,13 @@ jobs:
 
     steps:
       - name: Checkout locally
-        uses: actions/checkout@v2
+        uses: actions/checkout@latest
         if: ${{ env.ACT }}
         with:
           path: "tag-changelog"
+
       - name: Checkout GitHub
-        uses: actions/checkout@v2
+        uses: actions/checkout@latest
         if: ${{ !env.ACT }}
 
       - name: Create latest tag
@@ -37,11 +38,10 @@ jobs:
           exclude_types: other,doc,chore,build
 
       - name: Create release
-        uses: actions/create-release@latest
+        uses: softprops/action-gh-release@v2
         if: ${{ !env.ACT }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref }}
           body: ${{ steps.changelog.outputs.changes }}
+          token: ${{ secrets.GITHUB_TOKEN }}
