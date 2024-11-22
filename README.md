@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@latest
 
       - name: Create changelog text
         id: changelog
@@ -34,13 +34,12 @@ jobs:
           exclude_types: other,doc,chore
 
       - name: Create release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref }}
           body: ${{ steps.changelog.outputs.changes }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Inputs
