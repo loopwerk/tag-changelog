@@ -136,3 +136,7 @@ You can also check out the [Releases page](https://github.com/loopwerk/tag-chang
 ## Thanks
 
 Thanks to [Helmisek/conventional-changelog-generator](https://github.com/Helmisek/conventional-changelog-generator) and [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) for inspiration. Thanks to [nektos/act](https://github.com/nektos/act) for making it possible to run GitHub Actions locally, making development and testing a whole lot easier.
+
+## Support
+
+Commercial support is available via [Loopwerk](https://www.loopwerk.io/open-source/support/).
