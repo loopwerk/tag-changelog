@@ -1,4 +1,6 @@
-const DEFAULT_CONFIG = {
+import type { Config } from "./types";
+
+const DEFAULT_CONFIG: Config = {
   types: [
     { types: ["feat", "feature"], label: "New Features" },
     { types: ["fix", "bugfix"], label: "Bugfixes" },
@@ -24,7 +26,11 @@ const DEFAULT_CONFIG = {
       const scope = commit.scope ? `**${commit.scope}:** ` : "";
       text += `- ${scope}${commit.subject}\n`;
       if (commit.body && includeCommitBody) {
-        text += `  ${commit.body}\n`;
+        text +=
+          commit.body
+            .split("\n")
+            .map(line => `  ${line}`)
+            .join("\n") + "\n";
       }
     });
 
@@ -35,7 +41,7 @@ const DEFAULT_CONFIG = {
     let text = `\n## BREAKING CHANGES\n`;
 
     notes.forEach(note => {
-      text += `- due to [${note.commit.sha.substr(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
+      text += `- due to [${note.commit.sha!.substring(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
       text += `${note.text}\n\n`;
     });
 
@@ -44,8 +50,8 @@ const DEFAULT_CONFIG = {
 
   renderChangelog: function (release, changes) {
     const now = new Date();
-    return `# ${release} - ${now.toISOString().substr(0, 10)}\n\n` + changes + "\n\n";
+    return `# ${release} - ${now.toISOString().substring(0, 10)}\n\n` + changes + "\n\n";
   },
 };
 
-module.exports = DEFAULT_CONFIG;
+export default DEFAULT_CONFIG;

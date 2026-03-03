@@ -1,7 +1,5 @@
-/* eslint-env node, mocha */
-
-const assert = require("assert");
-const parseCommitMessage = require("../src/parseCommitMessage");
+import assert from "assert";
+import parseCommitMessage from "../src/parseCommitMessage";
 
 const fetchUserFunc = async function () {
   return {
@@ -48,7 +46,7 @@ describe("parseCommitMessage", () => {
 
     assert.strictEqual(result.subject, "This is a fix");
     assert.strictEqual(result.type, "fix");
-    assert.notStrictEqual(result.notes, [{ text: "This is a fix", title: "BREAKING CHANGE" }]);
+    assert.deepStrictEqual(result.notes, [{ text: "This is a fix", title: "BREAKING CHANGE" }]);
   });
 
   it("should parse a missing type", async () => {

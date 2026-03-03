@@ -14,9 +14,8 @@ inputs:
   include_commit_body:
     description: Whether to include the commit body in the changelog
     required: false
-    default: "false"
   config_file:
-    description: Location of the config JSON file
+    description: Location of the config JS file
     required: false
 outputs:
   changelog:

@@ -1,7 +1,8 @@
-const groupByType = require("./groupByType");
-const translateType = require("./translateType");
+import groupByType from "./groupByType";
+import translateType from "./translateType";
+import type { ParsedCommit, Config, NoteWithCommit, ChangelogOutput } from "./types";
 
-function generateChangelog(releaseName, commitObjects, config) {
+export default function generateChangelog(releaseName: string, commitObjects: ParsedCommit[], config: Config): ChangelogOutput {
   const commitsByType = groupByType(commitObjects, config.types);
   let changes = "";
 
@@ -15,19 +16,19 @@ function generateChangelog(releaseName, commitObjects, config) {
     });
 
   // Find all the notes of all the commits of all the types
-  const notes = commitsByType
+  const notes: NoteWithCommit[] = commitsByType
     .flatMap(obj => {
       return obj.commits
         .map(commit => {
           if (commit.notes && commit.notes.length) {
-            return commit.notes.map(note => {
-              const noteObj = note;
-              noteObj.commit = commit;
-              return noteObj;
-            });
+            return commit.notes.map(note => ({
+              ...note,
+              commit,
+            }));
           }
+          return undefined;
         })
-        .filter(o => o);
+        .filter((o): o is NoteWithCommit[] => o !== undefined);
     })
     .flatMap(o => o);
 
@@ -40,9 +41,7 @@ function generateChangelog(releaseName, commitObjects, config) {
   const changelog = config.renderChangelog(releaseName, changes);
 
   return {
-    changelog: changelog,
-    changes: changes,
+    changelog,
+    changes,
   };
 }
-
-module.exports = generateChangelog;

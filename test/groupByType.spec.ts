@@ -1,12 +1,11 @@
-/* eslint-env node, mocha */
-
-const assert = require("assert");
-const groupByType = require("../src/groupByType");
-const DEFAULT_CONFIG = require("../src/defaultConfig");
+import assert from "assert";
+import groupByType from "../src/groupByType";
+import DEFAULT_CONFIG from "../src/defaultConfig";
+import type { ParsedCommit } from "../src/types";
 
 describe("groupByType", () => {
   it("should group and sort commits by type", () => {
-    const commits = [
+    const commits: ParsedCommit[] = [
       { subject: "Subject 0", type: "other", notes: [] },
       { subject: "Subject 1", type: "feat", notes: [] },
       { subject: "Subject 2", type: "nonexisting", notes: [] },
@@ -45,7 +44,7 @@ describe("groupByType", () => {
   });
 
   it("should test failure too", () => {
-    const commits = [
+    const commits: ParsedCommit[] = [
       { subject: "Subject 0", type: "other", notes: [] },
       { subject: "Subject 1", type: "feat", notes: [] },
     ];

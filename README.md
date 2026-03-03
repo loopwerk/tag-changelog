@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@latest
+        uses: actions/checkout@v6
 
       - name: Create changelog text
         id: changelog
@@ -36,8 +36,8 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -64,12 +64,12 @@ jobs:
     config_file: .github/tag-changelog-config.js
 ```
 
-The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the [default config](https://github.com/loopwerk/tag-changelog/blob/main/src/defaultConfig.js) will be used for whatever is not overriden.
+The config file can be used to map commit types to changelog labels, to override the rendering of changelog sections, and the rendering of the overall changelog. You only need to override the things you want to override. For example, you can leave out `renderTypeSection` and `renderChangelog` and only include the `types` config; the [default config](https://github.com/loopwerk/tag-changelog/blob/main/src/defaultConfig.ts) will be used for whatever is not overriden.
 
 ### Example config file:
 
 ```javascript
-module.exports = {
+export default {
   types: [
     { types: ["feat", "feature"], label: "🎉 New Features" },
     { types: ["fix", "bugfix"], label: "🐛 Bugfixes" },
@@ -86,7 +86,7 @@ module.exports = {
 
   excludeTypes: ["other"],
 
-  renderTypeSection: function (label, commits) {
+  renderTypeSection(label, commits) {
     let text = `\n## ${label}\n`;
 
     commits.forEach(commit => {
@@ -99,9 +99,9 @@ module.exports = {
     return text;
   },
 
-  renderChangelog: function (release, changes) {
+  renderChangelog(release, changes) {
     const now = new Date();
-    return `# ${release} - ${now.toISOString().substr(0, 10)}\n` + changes + "\n\n";
+    return `# ${release} - ${now.toISOString().substring(0, 10)}\n` + changes + "\n\n";
   },
 };
 ```

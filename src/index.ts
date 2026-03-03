@@ -1,16 +1,16 @@
-const { context, getOctokit } = require("@actions/github");
-const { info, getInput, setOutput, setFailed } = require("@actions/core");
-const { compareVersions, validate } = require("compare-versions");
-
-const parseCommitMessage = require("./parseCommitMessage");
-const generateChangelog = require("./generateChangelog");
-const DEFAULT_CONFIG = require("./defaultConfig");
+import { context, getOctokit } from "@actions/github";
+import { info, getInput, setOutput, setFailed } from "@actions/core";
+import { compareVersions, validate } from "compare-versions";
+import parseCommitMessage from "./parseCommitMessage";
+import generateChangelog from "./generateChangelog";
+import DEFAULT_CONFIG from "./defaultConfig";
+import type { Config } from "./types";
 
 const {
   repo: { owner, repo },
 } = context;
 
-function getConfig(path) {
+async function getConfig(path: string): Promise<Config> {
   if (path) {
     let workspace = process.env.GITHUB_WORKSPACE;
     if (process.env.ACT) {
@@ -18,13 +18,13 @@ function getConfig(path) {
       workspace += "/tag-changelog";
     }
 
-    const userConfig = require(`${workspace}/${path}`);
+    const userConfig = (await import(`${workspace}/${path}`)).default;
 
     // Merge default config with user config
     return Object.assign({}, DEFAULT_CONFIG, userConfig);
   }
 
-  return DEFAULT_CONFIG;
+  return { ...DEFAULT_CONFIG };
 }
 
 async function run() {
@@ -32,9 +32,9 @@ async function run() {
   const octokit = getOctokit(token);
 
   const configFile = getInput("config_file", { required: false });
-  const config = getConfig(configFile);
-  const excludeTypesString = getInput("exclude_types", { required: false }) || "";
-  const includeCommitBody = getInput("include_commit_body", { required: false }) || "";
+  const config = await getConfig(configFile);
+  const excludeTypesString = getInput("exclude_types", { required: false });
+  const includeCommitBody = getInput("include_commit_body", { required: false });
 
   if (excludeTypesString) {
     config.excludeTypes = excludeTypesString.split(",");
@@ -56,20 +56,19 @@ async function run() {
     .reverse();
 
   // if there is only one tag, then create a changelog from the first commit
-  let base = null;
-  let head = null;
+  let base: string;
+  let head: string;
   if (validSortedTags.length > 1) {
     base = validSortedTags[1].commit.sha;
     head = validSortedTags[0].commit.sha;
   } else if (validSortedTags.length === 1) {
-    const { data: commits } = await octokit.rest.repos.listCommits({
+    head = validSortedTags[0].commit.sha;
+    const commits = await octokit.paginate("GET /repos/{owner}/{repo}/commits", {
       owner,
       repo,
-      per_page: 1,
+      sha: head,
     });
-    const firstCommit = commits[0];
-    base = firstCommit.sha;
-    head = validSortedTags[0].commit.sha;
+    base = commits[commits.length - 1].sha;
   } else {
     setFailed("Couldn't find previous tag");
     return;
@@ -79,34 +78,32 @@ async function run() {
   const result = await octokit.rest.repos.compareCommits({
     owner,
     repo,
-    base: base,
-    head: head,
+    base,
+    head,
   });
 
-  const fetchUserFunc = async function (pullNumber) {
+  const fetchUserFunc = async function (pullNumber: string) {
     const pr = await octokit.rest.pulls.get({
       owner,
       repo,
-      pull_number: pullNumber,
+      pull_number: Number(pullNumber),
     });
 
     return {
-      username: pr.data.user.login,
-      userUrl: pr.data.user.html_url,
+      username: pr.data.user?.login ?? "ghost",
+      userUrl: pr.data.user?.html_url ?? "https://github.com/ghost",
     };
   };
 
   // Parse every commit, getting the type, turning PR numbers into links, etc
   const commitObjects = await Promise.all(
-    result.data.commits
-      .map(async commit => {
-        const commitObj = await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
-        commitObj.sha = commit.sha;
-        commitObj.url = commit.html_url;
-        commitObj.author = commit.author;
-        return commitObj;
-      })
-      .filter(m => m !== false)
+    result.data.commits.map(async commit => {
+      const commitObj = await parseCommitMessage(commit.commit.message, `https://github.com/${owner}/${repo}`, fetchUserFunc);
+      commitObj.sha = commit.sha;
+      commitObj.url = commit.html_url;
+      commitObj.author = commit.author;
+      return commitObj;
+    })
   );
 
   // And generate the changelog
@@ -123,4 +120,4 @@ async function run() {
   setOutput("changes", log.changes);
 }
 
-run();
+run().catch(e => setFailed(e instanceof Error ? e.message : String(e)));

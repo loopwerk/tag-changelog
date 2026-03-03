@@ -1,8 +1,6 @@
-/* eslint-env node, mocha */
-
-const assert = require("assert");
-const translateType = require("../src/translateType");
-const DEFAULT_CONFIG = require("../src/defaultConfig");
+import assert from "assert";
+import translateType from "../src/translateType";
+import DEFAULT_CONFIG from "../src/defaultConfig";
 
 describe("translateType", () => {
   it("should translate a type", () => {

@@ -1,14 +1,15 @@
-const { parser, toConventionalChangelogFormat } = require("@conventional-commits/parser");
+import { parser, toConventionalChangelogFormat } from "@conventional-commits/parser";
+import type { ParsedCommit, FetchUserFunc } from "./types";
 
 const PR_REGEX = /#([1-9]\d*)/;
 
-async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
-  let cAst;
+export default async function parseCommitMessage(message: string, repoUrl?: string, fetchUserFunc?: FetchUserFunc): Promise<ParsedCommit> {
+  let cAst: ParsedCommit;
 
   try {
     const ast = parser(message);
-    cAst = toConventionalChangelogFormat(ast);
-  } catch (error) {
+    cAst = toConventionalChangelogFormat(ast) as ParsedCommit;
+  } catch {
     // Not a valid commit
     const lines = message.split("\n");
     cAst = {
@@ -22,18 +23,16 @@ async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
   }
 
   const found = cAst.subject.match(PR_REGEX);
-  if (found) {
+  if (found && repoUrl && fetchUserFunc) {
     const pullNumber = found[1];
 
     try {
       const { username, userUrl } = await fetchUserFunc(pullNumber);
       cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
-    } catch (error) {
+    } catch {
       // We found a #123 style hash, but it wasn't a valid PR. Ignore.
     }
   }
 
   return cAst;
 }
-
-module.exports = parseCommitMessage;

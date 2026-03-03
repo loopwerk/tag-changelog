@@ -1,12 +1,11 @@
-/* eslint-env node, mocha */
-
-const assert = require("assert");
-const generateChangelog = require("../src/generateChangelog");
-const DEFAULT_CONFIG = require("../src/defaultConfig");
+import assert from "assert";
+import generateChangelog from "../src/generateChangelog";
+import DEFAULT_CONFIG from "../src/defaultConfig";
+import type { ParsedCommit, Config } from "../src/types";
 
 describe("generateChangelog", () => {
   it("should create a changelog", () => {
-    const commitObjects = [
+    const commitObjects: ParsedCommit[] = [
       { subject: "Subject 1", body: "Body 1", type: "fix", notes: [] },
       { subject: "Subject 2", body: "Body 2", type: "feat", notes: [] },
       { subject: "Subject 3", body: "Body 3", type: "feat", notes: [] },
@@ -15,7 +14,7 @@ describe("generateChangelog", () => {
       { subject: "Subject 6", body: "Body 6", type: "other", notes: [] },
     ];
 
-    const dateString = new Date().toISOString().substr(0, 10);
+    const dateString = new Date().toISOString().substring(0, 10);
 
     const expectedChanges = `## New Features
 - Subject 2
@@ -39,8 +38,7 @@ describe("generateChangelog", () => {
 
 `;
 
-    const config = DEFAULT_CONFIG;
-    config.excludeTypes = ["other"];
+    const config: Config = { ...DEFAULT_CONFIG, excludeTypes: ["other"] };
 
     const result = generateChangelog("0.0.1", commitObjects, config);
     assert.strictEqual(result.changes, expectedChanges);
@@ -48,7 +46,7 @@ describe("generateChangelog", () => {
   });
 
   it("should create a changelog with body text", () => {
-    const commitObjects = [
+    const commitObjects: ParsedCommit[] = [
       { subject: "Subject 1", body: "Body 1", type: "fix", notes: [] },
       { subject: "Subject 2", body: "Body 2", type: "feat", notes: [] },
       { subject: "Subject 3", body: "Body 3", type: "feat", notes: [] },
@@ -57,7 +55,7 @@ describe("generateChangelog", () => {
       { subject: "Subject 6", body: "Body 6", type: "other", notes: [] },
     ];
 
-    const dateString = new Date().toISOString().substr(0, 10);
+    const dateString = new Date().toISOString().substring(0, 10);
 
     const expectedChanges = `## New Features
 - Subject 2
@@ -91,17 +89,34 @@ describe("generateChangelog", () => {
 
 `;
 
-    const config = DEFAULT_CONFIG;
-    config.excludeTypes = ["other"];
-    config.includeCommitBody = true;
+    const config: Config = { ...DEFAULT_CONFIG, excludeTypes: ["other"], includeCommitBody: true };
 
     const result = generateChangelog("0.0.1", commitObjects, config);
     assert.strictEqual(result.changes, expectedChanges);
     assert.strictEqual(result.changelog, expectedChangelog);
   });
 
+  it("should create a changelog with multi-line body text", () => {
+    const commitObjects: ParsedCommit[] = [
+      { subject: "Subject 1", body: "Line 1\nLine 2\nLine 3", type: "feat", notes: [] },
+      { subject: "Subject 2", type: "feat", notes: [] },
+    ];
+
+    const expectedChanges = `## New Features
+- Subject 1
+  Line 1
+  Line 2
+  Line 3
+- Subject 2`;
+
+    const config: Config = { ...DEFAULT_CONFIG, includeCommitBody: true };
+
+    const result = generateChangelog("0.0.1", commitObjects, config);
+    assert.strictEqual(result.changes, expectedChanges);
+  });
+
   it("should create a changelog with breaking changes", () => {
-    const commitObjects = [
+    const commitObjects: ParsedCommit[] = [
       {
         subject: "Fix",
         type: "fix",
@@ -138,7 +153,7 @@ This is a breaking change!`;
   });
 
   it("should create a changelog with scopes", () => {
-    const commitObjects = [
+    const commitObjects: ParsedCommit[] = [
       { subject: "Subject 1", type: "fix", notes: [], scope: "scope" },
       { subject: "Subject 2", type: "feat", notes: [], scope: "scope" },
       { subject: "Subject 3", type: "feat", notes: [] },

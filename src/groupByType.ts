@@ -1,7 +1,9 @@
-function groupByType(commits, typeConfig) {
+import type { ParsedCommit, TypeDefinition, CommitGroup } from "./types";
+
+export default function groupByType(commits: ParsedCommit[], typeConfig: TypeDefinition[]): CommitGroup[] {
   // First, group all the commits by their types.
   // We end up with a dictionary where the key is the type, and the values is an array of commits.
-  const byType = {};
+  const byType: Record<string, ParsedCommit[]> = {};
   commits.forEach(commit => {
     if (!byType[commit.type]) {
       byType[commit.type] = [];
@@ -11,7 +13,7 @@ function groupByType(commits, typeConfig) {
 
   // Turn that dictionary into an array of objects,
   // where the key is the type, and the values is an array of commits.
-  const byTypeArray = [];
+  const byTypeArray: CommitGroup[] = [];
   Object.keys(byType).forEach(key => {
     byTypeArray.push({
       type: key,
@@ -30,5 +32,3 @@ function groupByType(commits, typeConfig) {
 
   return byTypeArray;
 }
-
-module.exports = groupByType;
