@@ -61,33 +61,33 @@ describe("generateChangelog", () => {
 
     const expectedChanges = `## New Features
 - Subject 2
-Body 2
+  Body 2
 - Subject 3
-Body 3
+  Body 3
 - Subject 5
-Body 5
+  Body 5
 
 ## Bugfixes
 - Subject 1
-Body 1
+  Body 1
 - Subject 4
-Body 4`;
+  Body 4`;
 
     const expectedChangelog = `# 0.0.1 - ${dateString}
 
 ## New Features
 - Subject 2
-Body 2
+  Body 2
 - Subject 3
-Body 3
+  Body 3
 - Subject 5
-Body 5
+  Body 5
 
 ## Bugfixes
 - Subject 1
-Body 1
+  Body 1
 - Subject 4
-Body 4
+  Body 4
 
 `;
 

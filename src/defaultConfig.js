@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
       const scope = commit.scope ? `**${commit.scope}:** ` : "";
       text += `- ${scope}${commit.subject}\n`;
       if (commit.body && includeCommitBody) {
-        text += `${commit.body}\n`;
+        text += `  ${commit.body}\n`;
       }
     });
 
