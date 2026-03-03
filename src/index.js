@@ -34,9 +34,14 @@ async function run() {
   const configFile = getInput("config_file", { required: false });
   const config = getConfig(configFile);
   const excludeTypesString = getInput("exclude_types", { required: false }) || "";
+  const includeCommitBody = getInput("include_commit_body", { required: false }) || "";
 
   if (excludeTypesString) {
     config.excludeTypes = excludeTypesString.split(",");
+  }
+
+  if (includeCommitBody) {
+    config.includeCommitBody = includeCommitBody === "true";
   }
 
   // Find the two most recent tags

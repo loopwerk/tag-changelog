@@ -46,6 +46,7 @@ jobs:
 
 - `token`: Your GitHub token, `${{ secrets.GITHUB_TOKEN }}`. Required.
 - `exclude_types`: A comma separated list of commit types you want to exclude from the changelog, for example: "other,chore". Optional (defaults to nothing). Can also be configured in the config file.
+- `include_commit_body`: Whether to include the commit body in the changelog. Optional (defaults to "false"). Can also be configured in the config file.
 - `config_file`: Location of the config file. Optional.
 
 ## Outputs
