@@ -62,6 +62,7 @@ describe("parseCommitMessage", () => {
     const result = await parseCommitMessage("This is a commit\n\nBody");
 
     assert.strictEqual(result.subject, "This is a commit");
+    assert.strictEqual(result.body, "Body");
     assert.strictEqual(result.type, "other");
   });
 

@@ -10,10 +10,15 @@ async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
     cAst = toConventionalChangelogFormat(ast);
   } catch (error) {
     // Not a valid commit
+    const lines = message.split("\n");
     cAst = {
-      subject: message.split("\n")[0],
+      subject: lines[0],
       type: "other",
     };
+    const bodyStart = message.indexOf("\n\n");
+    if (bodyStart !== -1) {
+      cAst.body = message.substring(bodyStart + 2);
+    }
   }
 
   const found = cAst.subject.match(PR_REGEX);
