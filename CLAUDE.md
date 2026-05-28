@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-tag-changelog is a GitHub Action that generates changelogs from conventional commits between git tags. It parses commit messages, groups them by type, and outputs formatted changelog text. It runs on Node 20. Source is TypeScript with ESM imports, bundled to a single file via esbuild.
+tag-changelog is a GitHub Action that generates changelogs from conventional commits between git tags. It parses commit messages, groups them by type, and outputs formatted changelog text. It runs on Node 24. Source is TypeScript with ESM imports, bundled to a single file via esbuild.
 
 ## Commands
 
