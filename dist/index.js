@@ -24462,7 +24462,11 @@ async function parseCommitMessage(message, repoUrl, fetchUserFunc) {
     const pullNumber = found[1];
     try {
       const { username, userUrl } = await fetchUserFunc(pullNumber);
-      cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+      const linked = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+      cAst.notes?.forEach((note) => {
+        if (note.text === cAst.subject) note.text = linked;
+      });
+      cAst.subject = linked;
     } catch {
     }
   }
@@ -24575,9 +24579,11 @@ var DEFAULT_CONFIG = {
       text += `- due to [${note.commit.sha.substring(0, 6)}](${note.commit.url}): ${note.commit.subject}
 
 `;
-      text += `${note.text}
+      if (note.text !== note.commit.subject) {
+        text += `${note.text}
 
 `;
+      }
     });
     return text;
   },

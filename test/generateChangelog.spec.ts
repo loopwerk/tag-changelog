@@ -152,6 +152,27 @@ This is a breaking change!`;
     assert.strictEqual(result.changes, expectedChanges);
   });
 
+  it("should not repeat the subject when the breaking change note is the same", () => {
+    const commitObjects: ParsedCommit[] = [
+      {
+        subject: "Feature",
+        type: "feat",
+        notes: [{ title: "BREAKING CHANGE", text: "Feature" }],
+        sha: "bcb8767bc22bc7d4ab47a4fffd4ef435de581054",
+        url: "https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054",
+      },
+    ];
+
+    const expectedChanges = `## New Features
+- Feature
+
+## BREAKING CHANGES
+- due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Feature`;
+
+    const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
+    assert.strictEqual(result.changes, expectedChanges);
+  });
+
   it("should create a changelog with scopes", () => {
     const commitObjects: ParsedCommit[] = [
       { subject: "Subject 1", type: "fix", notes: [], scope: "scope" },

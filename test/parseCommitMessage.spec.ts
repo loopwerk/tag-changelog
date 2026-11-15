@@ -49,6 +49,15 @@ describe("parseCommitMessage", () => {
     assert.deepStrictEqual(result.notes, [{ text: "This is a fix", title: "BREAKING CHANGE" }]);
   });
 
+  it("should parse a breaking change fix with a PR number", async () => {
+    const result = await parseCommitMessage("fix!: This is a fix [#1]", "https://github.com/loopwerk/tag-changelog", fetchUserFunc);
+
+    const subject =
+      "This is a fix [[#1](https://github.com/loopwerk/tag-changelog/pull/1) by [kevinrenskers](https://github.com/kevinrenskers)]";
+    assert.strictEqual(result.subject, subject);
+    assert.deepStrictEqual(result.notes, [{ text: subject, title: "BREAKING CHANGE" }]);
+  });
+
   it("should parse a missing type", async () => {
     const result = await parseCommitMessage("This is a commit");
 

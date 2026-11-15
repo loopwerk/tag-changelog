@@ -42,7 +42,9 @@ const DEFAULT_CONFIG: Config = {
 
     notes.forEach(note => {
       text += `- due to [${note.commit.sha!.substring(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
-      text += `${note.text}\n\n`;
+      if (note.text !== note.commit.subject) {
+        text += `${note.text}\n\n`;
+      }
     });
 
     return text;

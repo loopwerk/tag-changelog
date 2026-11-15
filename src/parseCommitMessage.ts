@@ -28,7 +28,13 @@ export default async function parseCommitMessage(message: string, repoUrl?: stri
 
     try {
       const { username, userUrl } = await fetchUserFunc(pullNumber);
-      cAst.subject = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+      const linked = cAst.subject.replace(PR_REGEX, () => `[#${pullNumber}](${repoUrl}/pull/${pullNumber}) by [${username}](${userUrl})`);
+
+      // A `feat!:` commit without a footer gets the subject as its breaking change note.
+      cAst.notes?.forEach(note => {
+        if (note.text === cAst.subject) note.text = linked;
+      });
+      cAst.subject = linked;
     } catch {
       // We found a #123 style hash, but it wasn't a valid PR. Ignore.
     }
