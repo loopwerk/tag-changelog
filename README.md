@@ -128,9 +128,7 @@ The order in which the `types` appear also determines the order of the generated
 >
 > ## BREAKING CHANGES
 >
-> - due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): commit types to exclude can now also be configured via the config file
->
-> The `exclude` input parameter has been renamed to `exclude_types`.
+> - The `exclude` input parameter has been renamed to `exclude_types`.
 
 You can also check out the [Releases page](https://github.com/loopwerk/tag-changelog/releases) for tag-changelog.
 

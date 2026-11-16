@@ -140,13 +140,8 @@ describe("generateChangelog", () => {
 - Fix
 
 ## BREAKING CHANGES
-- due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Feature
-
-This is another breaking change!
-
-- due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Fix
-
-This is a breaking change!`;
+- This is another breaking change!
+- This is a breaking change!`;
 
     const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
     assert.strictEqual(result.changes, expectedChanges);
@@ -167,7 +162,31 @@ This is a breaking change!`;
 - Feature
 
 ## BREAKING CHANGES
-- due to [bcb876](https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054): Feature`;
+- Feature`;
+
+    const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
+    assert.strictEqual(result.changes, expectedChanges);
+  });
+
+  it("should indent multi-line breaking change notes", () => {
+    const commitObjects: ParsedCommit[] = [
+      {
+        subject: "Remove deprecated code",
+        type: "feat",
+        notes: [{ title: "BREAKING CHANGE", text: "Deprecated APIs are removed:\n\n* foo\n* bar" }],
+        sha: "bcb8767bc22bc7d4ab47a4fffd4ef435de581054",
+        url: "https://github.com/loopwerk/tag-changelog/commit/bcb8767bc22bc7d4ab47a4fffd4ef435de581054",
+      },
+    ];
+
+    const expectedChanges = `## New Features
+- Remove deprecated code
+
+## BREAKING CHANGES
+- Deprecated APIs are removed:
+
+  * foo
+  * bar`;
 
     const result = generateChangelog("0.0.1", commitObjects, DEFAULT_CONFIG);
     assert.strictEqual(result.changes, expectedChanges);

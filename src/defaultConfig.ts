@@ -41,10 +41,11 @@ const DEFAULT_CONFIG: Config = {
     let text = `\n## BREAKING CHANGES\n`;
 
     notes.forEach(note => {
-      text += `- due to [${note.commit.sha!.substring(0, 6)}](${note.commit.url}): ${note.commit.subject}\n\n`;
-      if (note.text !== note.commit.subject) {
-        text += `${note.text}\n\n`;
-      }
+      const [first, ...rest] = note.text.split("\n");
+      text += `- ${first}\n`;
+      rest.forEach(line => {
+        text += line ? `  ${line}\n` : "\n";
+      });
     });
 
     return text;

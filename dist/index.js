@@ -24576,14 +24576,13 @@ var DEFAULT_CONFIG = {
 ## BREAKING CHANGES
 `;
     notes.forEach((note) => {
-      text += `- due to [${note.commit.sha.substring(0, 6)}](${note.commit.url}): ${note.commit.subject}
-
+      const [first, ...rest] = note.text.split("\n");
+      text += `- ${first}
 `;
-      if (note.text !== note.commit.subject) {
-        text += `${note.text}
-
-`;
-      }
+      rest.forEach((line) => {
+        text += line ? `  ${line}
+` : "\n";
+      });
     });
     return text;
   },
